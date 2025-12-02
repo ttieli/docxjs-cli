@@ -29,6 +29,10 @@
       "headerBold": true,
       "headerColor": "000000",
       "cellAlign": "left"
+    },
+    "hyperlink": {
+      "color": "000000",
+      "underline": false
     }
   },
   "tech_report_blue": {
@@ -61,6 +65,10 @@
       "headerBold": true,
       "headerColor": "0056B3",
       "cellAlign": "left"
+    },
+    "hyperlink": {
+      "color": "0563C1",
+      "underline": true
     }
   },
   "staff_handbook_cn": {
@@ -93,6 +101,10 @@
       "headerBold": true,
       "headerColor": "000000",
       "cellAlign": "center"
+    },
+    "hyperlink": {
+      "color": "000000",
+      "underline": false
     }
   },
   "demo_funky": {
@@ -124,6 +136,10 @@
       "headerBold": true,
       "headerColor": "0000FF",
       "cellAlign": "center"
+    },
+    "hyperlink": {
+      "color": "FF0000",
+      "underline": true
     }
   }
 }
