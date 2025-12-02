@@ -7,9 +7,9 @@ const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
 const MarkdownIt = require('markdown-it');
 const inquirer = require('inquirer');
-const { 
+const {
     Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, 
-    BorderStyle, HeadingLevel, AlignmentType, WidthType, VerticalAlign 
+    BorderStyle, HeadingLevel, AlignmentType, WidthType, VerticalAlign, ShadingType 
 } = require('docx');
 
 // --- 0. 加载配置 ---
@@ -99,7 +99,8 @@ function loadTemplates(customConfigPath) {
                                 pythonExecutable = process.env.DOCXJS_PYTHON_PATH;
                             } else if (fs.existsSync(path.join(__dirname, 'venv'))) {
                                 pythonExecutable = path.join(__dirname, 'venv', 'bin', 'python3');
-                            } else {
+                            }
+                            else {
                                 const globalEnvPath = path.join(process.env.HOME || process.env.USERPROFILE, '.docxjs-cli-env', 'bin', 'python3');
                                 if (fs.existsSync(globalEnvPath)) { pythonExecutable = globalEnvPath; }
                             }
@@ -164,6 +165,18 @@ function loadTemplates(customConfigPath) {
                     size: currentStyle.fontSizeMain,
                     color: colorOverride || currentStyle.colorMain || "000000"
                 }));
+            } else if (token.type === 'code_inline') {
+                runs.push(new TextRun({
+                    text: token.content,
+                    font: "Courier New",
+                    size: currentStyle.fontSizeMain,
+                    color: colorOverride || currentStyle.colorMain || "000000", // Keep text color unless override
+                    shading: {
+                        type: ShadingType.CLEAR,
+                        color: "auto",
+                        fill: "F2F2F2" // Light gray background
+                    }
+                }));
             } else if (token.type === 'strong_open') { isBold = true; } 
             else if (token.type === 'strong_close') { isBold = false; } 
             else if (token.type === 'em_open') { isItalic = true; } 
@@ -171,66 +184,82 @@ function loadTemplates(customConfigPath) {
         });
         return runs;
     }
-
-    let tableBuffer = null;
-
-    for (let i = 0; i < tokens.length; i++) {
-        const token = tokens[i];
-
-        if (token.type === 'heading_open') {
-            const level = parseInt(token.tag.replace('h', ''));
-            const inlineToken = tokens[i + 1];
-            const textContent = inlineToken.content;
-            let paraObj = {
-                children: [],
-                spacing: { before: 200, after: 200 }
-            };
-
-            if (level === 1) {
-                paraObj.heading = HeadingLevel.HEADING_1;
-                paraObj.alignment = currentStyle.redHeader ? AlignmentType.CENTER : AlignmentType.LEFT;
-                let h1Color = currentStyle.redHeader ? "FF0000" : (currentStyle.colorHeader1 || "000000");
-                let h1Bold = currentStyle.redHeader ? false : true; 
-                paraObj.children.push(new TextRun({
-                    text: textContent,
-                    font: currentStyle.fontHeader1 || currentStyle.fontMain,
-                    size: currentStyle.fontSizeH1 || 32,
-                    color: h1Color,
-                    bold: h1Bold
-                }));
-                if (currentStyle.redHeader) paraObj.spacing = { after: 400 };
-            } else if (level === 2) {
-                 paraObj.heading = HeadingLevel.HEADING_2;
-                 paraObj.children.push(new TextRun({
-                    text: textContent,
-                    font: currentStyle.fontHeader2 || currentStyle.fontMain,
-                    size: currentStyle.fontSizeH2 || 28,
-                    color: currentStyle.colorHeader2 || "000000",
-                    bold: true 
-                }));
-            } else if (level === 3) {
-                 paraObj.heading = HeadingLevel.HEADING_3;
-                 paraObj.children.push(new TextRun({
-                    text: textContent,
-                    font: currentStyle.fontHeader3 || currentStyle.fontMain,
-                    size: currentStyle.fontSizeH3 || 24,
-                    color: currentStyle.colorHeader3 || "000000",
-                    bold: true
-                }));
-            } else {
-                paraObj.heading = HeadingLevel.HEADING_4;
-                paraObj.children.push(new TextRun({ text: textContent, font: currentStyle.fontMain, size: currentStyle.fontSizeMain }));
+        let tableBuffer = null;
+    
+        // Default spacing configs if not provided
+        const headerSpacing = currentStyle.headerSpacing || { before: 200, after: 200 };
+        const bodySpacing = currentStyle.bodySpacing || { before: 0, after: 0 };
+    
+        for (let i = 0; i < tokens.length; i++) {
+            const token = tokens[i];
+    
+            if (token.type === 'heading_open') {
+                const level = parseInt(token.tag.replace('h', ''));
+                const inlineToken = tokens[i + 1];
+                const textContent = inlineToken.content;
+                
+                // Apply header spacing
+                let paraObj = {
+                    children: [],
+                    spacing: { ...headerSpacing } 
+                };
+    
+                if (level === 1) {
+                    paraObj.heading = HeadingLevel.HEADING_1;
+                    paraObj.alignment = currentStyle.redHeader ? AlignmentType.CENTER : AlignmentType.LEFT;
+                    let h1Color = currentStyle.redHeader ? "FF0000" : (currentStyle.colorHeader1 || "000000");
+                    let h1Bold = currentStyle.redHeader ? false : true; 
+                    paraObj.children.push(new TextRun({
+                        text: textContent,
+                        font: currentStyle.fontHeader1 || currentStyle.fontMain,
+                        size: currentStyle.fontSizeH1 || 32,
+                        color: h1Color,
+                        bold: h1Bold
+                    }));
+                    if (currentStyle.redHeader) paraObj.spacing = { after: 400 }; // Red header special spacing override
+                } else if (level === 2) {
+                     paraObj.heading = HeadingLevel.HEADING_2;
+                     paraObj.children.push(new TextRun({
+                        text: textContent,
+                        font: currentStyle.fontHeader2 || currentStyle.fontMain,
+                        size: currentStyle.fontSizeH2 || 28,
+                        color: currentStyle.colorHeader2 || "000000",
+                        bold: true 
+                    }));
+                } else if (level === 3) {
+                     paraObj.heading = HeadingLevel.HEADING_3;
+                     paraObj.children.push(new TextRun({
+                        text: textContent,
+                        font: currentStyle.fontHeader3 || currentStyle.fontMain,
+                        size: currentStyle.fontSizeH3 || 24,
+                        color: currentStyle.colorHeader3 || "000000",
+                        bold: true
+                    }));
+                } else {
+                    // Level 4+
+                    paraObj.heading = HeadingLevel.HEADING_4;
+                    paraObj.children.push(new TextRun({ 
+                        text: textContent, 
+                        font: currentStyle.fontMain, 
+                        size: currentStyle.fontSizeMain,
+                        color: currentStyle.colorMain || "000000", // Ensure black/default color
+                        bold: true // Default bold for lower level headers
+                    }));
+                }
+                docChildren.push(new Paragraph(paraObj));
+                i += 2; 
             }
-            docChildren.push(new Paragraph(paraObj));
-            i += 2; 
-        }
-        else if (token.type === 'paragraph_open') {
-            if (!tableBuffer) {
-                 const runs = processInline(tokens[i + 1]);
-                 let paraConfig = {
-                     children: runs,
-                     spacing: { line: currentStyle.lineSpacing },
-                 };
+            else if (token.type === 'paragraph_open') {
+                if (!tableBuffer) {
+                     const runs = processInline(tokens[i + 1]);
+                     let paraConfig = {
+                         children: runs,
+                         spacing: { 
+                             line: currentStyle.lineSpacing,
+                             before: bodySpacing.before,
+                             after: bodySpacing.after
+                         },
+                     };
                  if (currentStyle.redHeader) {
                      paraConfig.indent = { firstLine: 640 };
                      paraConfig.alignment = AlignmentType.JUSTIFIED;
