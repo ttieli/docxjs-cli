@@ -1,0 +1,129 @@
+{
+  "academic_paper_en": {
+    "description": "英文学术论文 (Academic APA - Times New Roman)",
+    "fontMain": "Times New Roman",
+    "colorMain": "000000",
+    "fontHeader1": "Arial",
+    "colorHeader1": "000000",
+    "fontHeader2": "Arial",
+    "colorHeader2": "000000",
+    "fontHeader3": "Arial",
+    "colorHeader3": "000000",
+    "fontSizeMain": 24, 
+    "fontSizeH1": 32,
+    "fontSizeH2": 28,
+    "fontSizeH3": 24,
+    "lineSpacing": 480, 
+    "margin": {
+      "top": "2.54cm",
+      "bottom": "2.54cm",
+      "left": "2.54cm",
+      "right": "2.54cm"
+    },
+    "redHeader": false,
+    "firstLineIndent": 0,
+    "table": {
+      "borderStyle": "single",
+      "borderColor": "000000",
+      "borderSize": 4,
+      "headerBold": true,
+      "headerColor": "000000",
+      "cellAlign": "left"
+    }
+  },
+  "tech_report_blue": {
+    "description": "技术报告-蓝调 (Tech Report Blue)",
+    "fontMain": "微软雅黑",
+    "colorMain": "333333",
+    "fontHeader1": "微软雅黑",
+    "colorHeader1": "0056B3", 
+    "fontHeader2": "微软雅黑",
+    "colorHeader2": "0056B3",
+    "fontHeader3": "微软雅黑",
+    "colorHeader3": "0056B3",
+    "fontSizeMain": 21,
+    "fontSizeH1": 36,
+    "fontSizeH2": 28,
+    "fontSizeH3": 24,
+    "lineSpacing": 300,
+    "margin": {
+      "top": "2cm",
+      "bottom": "2cm",
+      "left": "2cm",
+      "right": "2cm"
+    },
+    "redHeader": false,
+    "firstLineIndent": 0,
+    "table": {
+      "borderStyle": "dotted",
+      "borderColor": "0056B3",
+      "borderSize": 4,
+      "headerBold": true,
+      "headerColor": "0056B3",
+      "cellAlign": "left"
+    }
+  },
+  "staff_handbook_cn": {
+    "description": "员工手册/内部便签 (中文楷体)",
+    "fontMain": "楷体_GB2312",
+    "colorMain": "000000",
+    "fontHeader1": "黑体",
+    "colorHeader1": "000000",
+    "fontHeader2": "黑体",
+    "colorHeader2": "000000",
+    "fontHeader3": "黑体",
+    "colorHeader3": "000000",
+    "fontSizeMain": 28,
+    "fontSizeH1": 36,
+    "fontSizeH2": 32,
+    "fontSizeH3": 28,
+    "lineSpacing": 360,
+    "margin": {
+        "top": "3cm",
+        "bottom": "3cm",
+        "left": "2.5cm",
+        "right": "2.5cm"
+    },
+    "redHeader": false,
+    "firstLineIndent": 560,
+    "table": {
+      "borderStyle": "single",
+      "borderColor": "000000",
+      "borderSize": 2,
+      "headerBold": true,
+      "headerColor": "000000",
+      "cellAlign": "center"
+    }
+  },
+  "demo_funky": {
+    "description": "演示-夸张风格 (Demo Funky Style)",
+    "fontMain": "Comic Sans MS",
+    "colorMain": "FF00FF",
+    "fontHeader1": "Impact",
+    "colorHeader1": "00FF00",
+    "fontHeader2": "Impact",
+    "colorHeader2": "0000FF",
+    "fontHeader3": "Impact",
+    "colorHeader3": "0000FF",
+    "fontSizeMain": 24,
+    "fontSizeH1": 64,
+    "fontSizeH2": 48,
+    "fontSizeH3": 36,
+    "lineSpacing": 480,
+    "margin": {
+      "top": "2cm",
+      "bottom": "2cm",
+      "left": "2cm",
+      "right": "2cm"
+    },
+    "redHeader": false,
+    "table": {
+      "borderStyle": "dashed",
+      "borderColor": "FF0000",
+      "borderSize": 8,
+      "headerBold": true,
+      "headerColor": "0000FF",
+      "cellAlign": "center"
+    }
+  }
+}
