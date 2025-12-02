@@ -112,9 +112,28 @@ function loadTemplates(customConfigPath) {
     if (referenceDocPath) {
         console.log(`🔍 Extracting styles from reference doc: ${referenceDocPath}...`);
         try {
-            const extractorPath = path.join(__dirname, 'style_extractor.py');
-            const pythonCmd = `python3 "${extractorPath}" "${referenceDocPath}"`;
-            const stdout = execSync(pythonCmd, { encoding: 'utf-8' });
+                            const extractorPath = path.join(__dirname, 'style_extractor.py');
+                            
+                            // 动态解析 Python 路径
+                            let pythonExecutable = 'python3'; // 默认尝试系统路径
+                            
+                            // 1. 检查环境变量
+                            if (process.env.DOCXJS_PYTHON_PATH) {
+                                pythonExecutable = process.env.DOCXJS_PYTHON_PATH;
+                            } 
+                            // 2. 检查项目内 venv (开发环境)
+                            else if (fs.existsSync(path.join(__dirname, 'venv'))) {
+                                pythonExecutable = path.join(__dirname, 'venv', 'bin', 'python3');
+                            }
+                            // 3. 检查用户主目录下的全局环境 (由 install_global.sh 创建)
+                            else {
+                                const globalEnvPath = path.join(process.env.HOME || process.env.USERPROFILE, '.docxjs-cli-env', 'bin', 'python3');
+                                if (fs.existsSync(globalEnvPath)) {
+                                    pythonExecutable = globalEnvPath;
+                                }
+                            }
+                    
+                            const pythonCmd = `"${pythonExecutable}" "${extractorPath}" "${referenceDocPath}"`;            const stdout = execSync(pythonCmd, { encoding: 'utf-8' });
             const extractedStyles = JSON.parse(stdout);
 
             if (extractedStyles.error) {
