@@ -1,0 +1,30 @@
+{
+  "name": "docxjs-cli",
+  "version": "1.1.0",
+  "description": "Markdown to Docx converter with Chinese Official Document Style support",
+  "bin": {
+    "docxjs": "./docxjs-cli.js"
+  },
+  "files": [
+    "docxjs-cli.js",
+    "style_extractor.py"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "docx",
+    "markdown",
+    "converter",
+    "cli"
+  ],
+  "author": "Your Name",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "docx": "^9.1.0",
+    "inquirer": "^8.2.5",
+    "markdown-it": "^14.1.0",
+    "yargs": "^17.7.2"
+  }
+}

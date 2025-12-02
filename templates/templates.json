@@ -1,0 +1,126 @@
+{
+  "default": {
+    "description": "默认标准格式 (Base Standard)",
+    "fontMain": "Calibri",
+    "colorMain": "000000",
+    "fontHeader1": "Calibri",
+    "colorHeader1": "000000",
+    "fontHeader2": "Calibri",
+    "colorHeader2": "000000",
+    "fontHeader3": "Calibri",
+    "colorHeader3": "000000",
+    "fontSizeMain": 24,
+    "fontSizeH1": 32,
+    "fontSizeH2": 28,
+    "fontSizeH3": 24,
+    "lineSpacing": 240,
+    "margin": {
+      "top": 1440,
+      "bottom": 1440,
+      "left": 1440,
+      "right": 1440
+    },
+    "redHeader": false,
+    "table": {
+      "borderStyle": "single",
+      "borderColor": "000000",
+      "borderSize": 4,
+      "headerBold": true,
+      "headerColor": "000000",
+      "cellAlign": "left"
+    }
+  },
+  "gov_official_red": {
+    "description": "党政机关公文-红头 (标准格式: 仿宋/方正小标宋/实线表格)",
+    "fontMain": "仿宋_GB2312",
+    "colorMain": "000000",
+    "fontHeader1": "方正小标宋简体",
+    "colorHeader1": "FF0000", 
+    "fontHeader2": "黑体",
+    "colorHeader2": "000000",
+    "fontHeader3": "楷体_GB2312",
+    "colorHeader3": "000000",
+    "fontSizeMain": 32,
+    "fontSizeH1": 44,
+    "fontSizeH2": 32,
+    "fontSizeH3": 28,
+    "lineSpacing": 560,
+    "margin": {
+      "top": "3.7cm",
+      "bottom": "3.5cm",
+      "left": "2.8cm",
+      "right": "2.6cm"
+    },
+    "redHeader": true,
+    "table": {
+      "borderStyle": "single",
+      "borderColor": "000000",
+      "borderSize": 1,
+      "headerBold": false,
+      "headerColor": "000000",
+      "cellAlign": "center"
+    }
+  },
+  "business_contract": {
+    "description": "商务合同 (标准格式: 宋体/黑体)",
+    "fontMain": "宋体",
+    "colorMain": "000000",
+    "fontHeader1": "黑体",
+    "colorHeader1": "000000",
+    "fontHeader2": "黑体",
+    "colorHeader2": "000000",
+    "fontHeader3": "黑体",
+    "colorHeader3": "000000",
+    "fontSizeMain": 24,
+    "fontSizeH1": 28,
+    "fontSizeH2": 24,
+    "fontSizeH3": 24,
+    "lineSpacing": 360,
+    "margin": {
+        "top": "2.54cm",
+        "bottom": "2.54cm",
+        "left": "3.17cm",
+        "right": "3.17cm"
+    },
+    "redHeader": false,
+    "table": {
+      "borderStyle": "single",
+      "borderColor": "000000",
+      "borderSize": 4,
+      "headerBold": true,
+      "headerColor": "000000",
+      "cellAlign": "left"
+    }
+  },
+  "gov_notice_plain": {
+    "description": "党政机关通知-普通 (楷体/无红头)",
+    "fontMain": "楷体_GB2312",
+    "colorMain": "000000",
+    "fontHeader1": "黑体",
+    "colorHeader1": "000000",
+    "fontHeader2": "黑体",
+    "colorHeader2": "000000",
+    "fontHeader3": "仿宋_GB2312",
+    "colorHeader3": "000000",
+    "fontSizeMain": 32,
+    "fontSizeH1": 40,
+    "fontSizeH2": 32,
+    "fontSizeH3": 28,
+    "lineSpacing": 480,
+    "margin": {
+      "top": "2.54cm",
+      "bottom": "2.54cm",
+      "left": "2.54cm",
+      "right": "2.54cm"
+    },
+    "redHeader": false,
+    "table": {
+      "borderStyle": "single",
+      "borderColor": "000000",
+      "borderSize": 1,
+      "headerBold": false,
+      "headerColor": "000000",
+      "cellAlign": "center"
+    }
+  }
+}
