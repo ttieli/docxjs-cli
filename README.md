@@ -36,13 +36,23 @@ This is a hybrid tool requiring both Node.js and Python environments.
     pip install python-docx
     ```
 
-### 📦 Installation
+### 📦 Installation / 安装
 
-You can install this tool directly from GitHub:
+**One-line Install (Recommended) / 一键安装（推荐）:**
+
+This will automatically set up the required Python environment and install the tool globally.
+这将自动配置所需的 Python 环境并全局安装工具。
 
 ```bash
-# Replace with your actual GitHub repo URL
-npm install -g git+https://github.com/YOUR_USERNAME/docxjs-cli.git
+curl -sSL https://raw.githubusercontent.com/ttieli/docxjs-cli/main/install_global.sh | bash
+```
+
+**Manual Install / 手动安装:**
+
+```bash
+git clone https://github.com/ttieli/docxjs-cli.git
+cd docxjs-cli
+./install_global.sh
 ```
 
 ### 🚀 Usage
