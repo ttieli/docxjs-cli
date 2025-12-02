@@ -15,7 +15,7 @@ A powerful, **hybrid CLI tool built with Node.js (`docx.js`) and Python (`python
 
 ### ✨ Features
 
-*   **Markdown to Docx**: Robust parsing via `markdown-it` with support for bold, italic, lists, and tables.
+*   **Markdown to Docx**: Robust parsing via `markdown-it` with support for bold, italic, lists, tables, and **inline code (`code`)**.
 *   **Official Government Style**: Built-in `gov_official_red` template that enforces strict formatting:
     *   **Red Header (红头)**: "FangSong" and "FZXiaoBiaoSong" fonts.
     *   **Strict Margins**: Standard 3.7cm/3.5cm margins.
@@ -86,18 +86,38 @@ docxjs input.md -o output_custom.docx -t tech_report_blue --config ./templates/c
 
 ---
 
+<a name="how-it-works"></a>
+## ⚙️ How It Works / 工作原理
+
+This tool leverages a powerful **Node.js + Python hybrid architecture** to achieve high-fidelity Docx generation with advanced style parsing.
+
+1.  **CLI Execution**: User runs `docxjs input.md -o output.docx [-t template] [-r reference.docx] [-c custom_config.json]`.
+2.  **Node.js Initiation**: The main `docxjs-cli.js` (Node.js) script starts, parsing command-line arguments.
+3.  **Template Loading**: Loads built-in templates from `templates/templates.json`. If `--config` is provided, it also loads user-defined templates.
+4.  **Base Style Application**: The template specified by `-t` (e.g., `gov_official_red`) is loaded as the base style configuration.
+5.  **Reference Doc Style Extraction (Python)**:
+    *   If a `--reference-doc` is provided, `docxjs-cli.js` (Node.js) spawns a child process to execute `style_extractor.py` (Python).
+    *   `style_extractor.py` uses the `python-docx` library to open the reference `.docx` file.
+    *   It extracts crucial style properties (e.g., `Normal` and `Heading 1`'s fonts, sizes, line spacing, page margins) and outputs them as a JSON string to `stdout`.
+6.  **Style Merging**: `docxjs-cli.js` (Node.js) receives and parses this JSON data. It then intelligently merges these extracted styles, **overriding** the base template's corresponding properties.
+7.  **Markdown Parsing**: The input Markdown file is read and parsed into an Abstract Syntax Tree (AST) using `markdown-it`.
+8.  **Docx Generation**: `docxjs-cli.js` iterates through the Markdown AST. For each Markdown element (headings, paragraphs, lists, tables, **inline code**), it maps it to a `docx.js` object, applying the now finalized style configuration (base template + reference doc overrides).
+9.  **Output**: Finally, `docx.js` builds the complete `.docx` document in memory, which is then written to the specified output file.
+
+---
+
 <a name="中文说明"></a>
 ## 🇨🇳 中文说明
 
 ### ✨ 核心特性
 
-*   **Markdown 转 Docx**：基于 `markdown-it` 的稳定解析，完美支持表格加粗、斜体等内联样式。
+*   **Markdown 转 Docx**：基于 `markdown-it` 的稳定解析，完美支持表格加粗、斜体等内联样式，以及**行内代码 (`code`)**。
 *   **党政机关公文标准**：内置 `gov_official_red` (红头公文) 模板，严格遵循国家公文格式标准：
     *   **红头文件**：自动应用方正小标宋（红头）、仿宋（正文）、黑体/楷体（标题）。
     *   **版面设置**：严格的 上3.7cm / 下3.5cm / 左2.8cm / 右2.6cm 页边距。
     *   **公文表格**：自动将 Markdown 表格渲染为全黑色实线边框（解决 Pandoc 表格样式不可控问题）。
 *   **交互式选择**：如果不指定模板参数，工具会自动弹出中文菜单供您选择。
-*   **混合样式提取 (Hybrid Mode)**：
+*   **混合样式提取 (Node.js + Python)**：
     *   利用 Python 脚本 (`style_extractor.py`) 解析现有的 `.docx` 参考文档。
     *   智能提取正文字体（如“宋体”）、字号和页边距，并覆盖预设模板。
 
