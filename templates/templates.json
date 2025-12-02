@@ -1,6 +1,6 @@
 {
   "default": {
-    "description": "默认标准格式 (Base Standard)",
+    "description": "Base template with standard formatting",
     "fontMain": "Calibri",
     "colorMain": "000000",
     "fontHeader1": "Calibri",
@@ -28,17 +28,21 @@
       "headerBold": true,
       "headerColor": "000000",
       "cellAlign": "left"
+    },
+    "hyperlink": {
+      "color": "0563C1",
+      "underline": true
     }
   },
   "gov_official_red": {
-    "description": "党政机关公文-红头 (标准格式: 仿宋/方正小标宋/实线表格)",
-    "fontMain": "仿宋_GB2312",
+    "description": "Chinese Government Official Document (Red Header, Solid Tables)",
+    "fontMain": "FangSong_GB2312",
     "colorMain": "000000",
-    "fontHeader1": "方正小标宋简体",
+    "fontHeader1": "FZXiaoBiaoSong-B05S",
     "colorHeader1": "FF0000", 
-    "fontHeader2": "黑体",
+    "fontHeader2": "SimHei",
     "colorHeader2": "000000",
-    "fontHeader3": "楷体_GB2312",
+    "fontHeader3": "KaiTi_GB2312",
     "colorHeader3": "000000",
     "fontSizeMain": 32,
     "fontSizeH1": 44,
@@ -59,17 +63,21 @@
       "headerBold": false,
       "headerColor": "000000",
       "cellAlign": "center"
+    },
+    "hyperlink": {
+      "color": "000000",
+      "underline": false
     }
   },
   "business_contract": {
-    "description": "商务合同 (标准格式: 宋体/黑体)",
-    "fontMain": "宋体",
+    "description": "Standard Business Contract Style",
+    "fontMain": "SimSun",
     "colorMain": "000000",
-    "fontHeader1": "黑体",
+    "fontHeader1": "SimHei",
     "colorHeader1": "000000",
-    "fontHeader2": "黑体",
+    "fontHeader2": "SimHei",
     "colorHeader2": "000000",
-    "fontHeader3": "黑体",
+    "fontHeader3": "SimHei",
     "colorHeader3": "000000",
     "fontSizeMain": 24,
     "fontSizeH1": 28,
@@ -90,17 +98,21 @@
       "headerBold": true,
       "headerColor": "000000",
       "cellAlign": "left"
+    },
+    "hyperlink": {
+      "color": "000000",
+      "underline": false
     }
   },
   "gov_notice_plain": {
-    "description": "党政机关通知-普通 (楷体/无红头)",
-    "fontMain": "楷体_GB2312",
+    "description": "Chinese Government Notice (Plain style, No Red Header)",
+    "fontMain": "KaiTi_GB2312",
     "colorMain": "000000",
-    "fontHeader1": "黑体",
+    "fontHeader1": "SimHei",
     "colorHeader1": "000000",
-    "fontHeader2": "黑体",
+    "fontHeader2": "SimHei",
     "colorHeader2": "000000",
-    "fontHeader3": "仿宋_GB2312",
+    "fontHeader3": "FangSong_GB2312",
     "colorHeader3": "000000",
     "fontSizeMain": 32,
     "fontSizeH1": 40,
@@ -121,6 +133,10 @@
       "headerBold": false,
       "headerColor": "000000",
       "cellAlign": "center"
+    },
+    "hyperlink": {
+      "color": "000000",
+      "underline": false
     }
   }
 }
