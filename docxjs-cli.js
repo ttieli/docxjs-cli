@@ -13,24 +13,46 @@ const {
     ExternalHyperlink, UnderlineType
 } = require('docx');
 
-// --- 0. 加载配置 ---
+// --- 0. 加载配置 (自动扫描 templates 目录) ---
 function loadTemplates(customConfigPath) {
     let templates = {};
-    const internalTemplatesPath = path.join(__dirname, 'templates', 'templates.json');
-    if (fs.existsSync(internalTemplatesPath)) {
-        try { templates = { ...templates, ...JSON.parse(fs.readFileSync(internalTemplatesPath, 'utf-8')) }; } 
-        catch (e) {}
+    const templatesDir = path.join(__dirname, 'templates');
+
+    // 1. 自动扫描并加载 templates/ 下的所有 .json 文件
+    if (fs.existsSync(templatesDir)) {
+        try {
+            const files = fs.readdirSync(templatesDir).filter(file => file.toLowerCase().endsWith('.json'));
+            // 排序以确保加载顺序一致 (例如 common_styles.json 在 templates.json 之前) 
+            files.sort(); 
+            
+            files.forEach(file => {
+                const fullPath = path.join(templatesDir, file);
+                try {
+                    const fileContent = JSON.parse(fs.readFileSync(fullPath, 'utf-8'));
+                    // 合并模板 (后加载的同名key会覆盖先加载的)
+                    templates = { ...templates, ...fileContent };
+                    // console.log(`Loaded templates from: ${file}`); // 可选 debug
+                } catch (e) {
+                    console.warn(`⚠️ Warning: Failed to parse template file '${file}': ${e.message}`);
+                }
+            });
+        } catch (e) {
+            console.error(`❌ Error reading templates directory: ${e.message}`);
+        }
+    } else {
+        console.warn(`⚠️ Templates directory not found at: ${templatesDir}`);
     }
-    const commonStylesPath = path.join(__dirname, 'templates', 'common_styles.json');
-    if (fs.existsSync(commonStylesPath)) {
-        try { templates = { ...templates, ...JSON.parse(fs.readFileSync(commonStylesPath, 'utf-8')) }; } 
-        catch (e) {}
-    }
+
+    // 2. 加载用户通过命令行 --config 指定的配置 (最高优先级)
     if (customConfigPath) {
         const absPath = path.resolve(process.cwd(), customConfigPath);
         if (fs.existsSync(absPath)) {
-            try { templates = { ...templates, ...JSON.parse(fs.readFileSync(absPath, 'utf-8')) }; } catch (e) {}
-        }
+            try {
+                const userTemplates = JSON.parse(fs.readFileSync(absPath, 'utf-8'));
+                console.log(`🎨 Loaded custom configuration from: ${customConfigPath}`);
+                templates = { ...templates, ...userTemplates };
+            } catch (e) { console.error(`❌ Failed to load custom config ${customConfigPath}:`, e.message); }
+        } else { console.warn(`⚠️ Custom config file not found: ${customConfigPath}`); }
     }
     return templates;
 }
@@ -75,14 +97,13 @@ function loadTemplates(customConfigPath) {
             name: `${key.padEnd(20)} - ${templates[key].description || "No desc"}`,
             value: key
         }));
-        // Add Clone Option if not present? No, Clone requires -r argument which is hard to prompt for file path here easily.
-        // We stick to template selection.
+        
         const answer = await inquirer.prompt([{ 
             type: 'list',
             name: 'selectedTemplate',
             message: '请选择目标文档格式 (Select Template):',
             choices: choices,
-            pageSize: 10
+            pageSize: 15 // 增加每页显示数量，方便查看更多模板
         }]);
         templateName = answer.selectedTemplate;
     }
