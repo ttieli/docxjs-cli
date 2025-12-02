@@ -181,15 +181,14 @@ function loadTemplates(customConfigPath) {
         let isItalic = false;
         inlineToken.children.forEach(token => {
             if (token.type === 'text') {
-                runs.push(new TextRun({
-                    text: token.content,
-                    bold: boldOverride !== undefined ? boldOverride : isBold,
-                    italics: isItalic,
-                    font: currentStyle.fontMain,
-                    size: currentStyle.fontSizeMain,
-                    color: colorOverride || currentStyle.colorMain || "000000"
-                }));
-            } else if (token.type === 'strong_open') { isBold = true; } 
+                            runs.push(new TextRun({
+                                text: token.content,
+                                bold: (boldOverride === true) || isBold,
+                                italics: isItalic,
+                                font: currentStyle.fontMain,
+                                size: currentStyle.fontSizeMain,
+                                color: colorOverride || currentStyle.colorMain || "000000"
+                            }));            } else if (token.type === 'strong_open') { isBold = true; } 
             else if (token.type === 'strong_close') { isBold = false; } 
             else if (token.type === 'em_open') { isItalic = true; } 
             else if (token.type === 'em_close') { isItalic = false; }
