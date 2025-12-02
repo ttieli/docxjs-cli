@@ -316,20 +316,17 @@ function loadTemplates(customConfigPath) {
                             if (tblConfig.cellAlign === 'center') align = AlignmentType.CENTER;
                             if (tblConfig.cellAlign === 'right') align = AlignmentType.RIGHT;
 
-                            return new TableCell({
-                                children: [new Paragraph({
-                                    children: [new TextRun({
-                                        text: cellText,
-                                        bold: isBold,
-                                        color: color,
-                                        font: currentStyle.fontMain,
-                                        size: currentStyle.fontSizeMain
-                                    })],
-                                    alignment: align,
-                                })],
-                                verticalAlign: VerticalAlign.CENTER,
-                            });
-                        })
+                                                    return new TableCell({
+                                                        children: [new Paragraph({
+                                                            children: (() => {
+                                                                // Parse inline markdown within the cell
+                                                                const cellTokens = md.parseInline(cellText, {})[0]; // parseInline returns [inlineToken]
+                                                                return processInline(cellTokens, color, isBold);
+                                                            })(),
+                                                            alignment: align,
+                                                        })],
+                                                        verticalAlign: VerticalAlign.CENTER,
+                                                    });                        })
                     });
                 });
                 
