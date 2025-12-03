@@ -8,7 +8,12 @@
   },
   "files": [
     "docxjs-cli.js",
-    "style_extractor.py"
+    "style_extractor.py",
+    "bin",
+    "lib",
+    "server",
+    "public",
+    "templates"
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
