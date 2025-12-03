@@ -15,6 +15,7 @@ A powerful, **hybrid CLI tool built with Node.js (`docx.js`) and Python (`python
 
 ### ✨ Features
 
+*   **Web Interface**: A built-in, user-friendly Web UI for visual template selection, style editing, and file conversion.
 *   **Markdown to Docx**: Robust parsing via `markdown-it` with support for bold, italic, lists, tables, and **inline code (`code`)**.
 *   **Official Government Style**: Built-in `gov_official_red` template that enforces strict formatting:
     *   **Red Header (红头)**: "FangSong" and "FZXiaoBiaoSong" fonts.
@@ -84,6 +85,17 @@ Load user-defined templates via `--config`.
 docxjs input.md -o output_custom.docx -t tech_report_blue --config ./templates/common_styles.json
 ```
 
+#### 5. Web Interface
+Launch the built-in web server to use the visual interface.
+```bash
+# After global installation:
+docxjs-web
+
+# Or from source:
+npm start
+```
+Then access **http://localhost:3000** in your browser.
+
 ---
 
 <a name="how-it-works"></a>
@@ -111,6 +123,7 @@ This tool leverages a powerful **Node.js + Python hybrid architecture** to achie
 
 ### ✨ 核心特性
 
+*   **Web 可视化界面**：内置好用的 Web UI，支持可视化选择模板、微调样式和文件转换。
 *   **Markdown 转 Docx**：基于 `markdown-it` 的稳定解析，完美支持表格加粗、斜体等内联样式，以及**行内代码 (`code`)**。
 *   **党政机关公文标准**：内置 `gov_official_red` (红头公文) 模板，严格遵循国家公文格式标准：
     *   **红头文件**：自动应用方正小标宋（红头）、仿宋（正文）、黑体/楷体（标题）。
@@ -178,6 +191,17 @@ docxjs input.md -o output_hybrid.docx -t gov_official_red -r ./path/to/reference
 # 示例：使用 templates/common_styles.json 中的 'tech_report_blue' 模板
 docxjs input.md -o output_custom.docx -t tech_report_blue --config ./templates/common_styles.json
 ```
+
+#### 5. Web 可视化界面
+启动内置的 Web 服务器以使用可视化界面。
+```bash
+# 全局安装后：
+docxjs-web
+
+# 或从源码运行：
+npm start
+```
+启动后访问浏览器 **http://localhost:3000**。
 
 ### ⚙️ Template Configuration (JSON)
 
