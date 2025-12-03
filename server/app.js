@@ -21,7 +21,45 @@ const upload = multer({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// ... existing code ...
+const PUBLIC_DIR = path.join(__dirname, '..', 'public');
+if (fs.existsSync(PUBLIC_DIR)) {
+    app.use(express.static(PUBLIC_DIR));
+}
+
+function sanitizeFileName(name) {
+    if (!name) return 'output.docx';
+    const cleaned = name.replace(/[\\/]+/g, '').replace(/[^a-zA-Z0-9._-]/g, '_');
+    return cleaned || 'output.docx';
+}
+
+function resolvePythonPath() {
+    if (process.env.DOCXJS_PYTHON_PATH) return process.env.DOCXJS_PYTHON_PATH;
+    const projectVenv = path.join(__dirname, '..', 'venv', 'bin', 'python3');
+    if (fs.existsSync(projectVenv)) return projectVenv;
+    const globalEnv = path.join(process.env.HOME || process.env.USERPROFILE || '', '.docxjs-cli-env', 'bin', 'python3');
+    if (fs.existsSync(globalEnv)) return globalEnv;
+    return 'python3';
+}
+
+async function extractReferenceStyles(tempDocPath) {
+    const pythonPath = resolvePythonPath();
+    const extractorPath = path.join(__dirname, '..', 'style_extractor.py');
+    const { stdout } = await execFileAsync(pythonPath, [extractorPath, tempDocPath], { timeout: 12000 });
+    return JSON.parse(stdout);
+}
+
+function mergeStyles(baseStyle, overrides) {
+    const merged = { ...(baseStyle || {}) };
+    Object.keys(overrides || {}).forEach(key => {
+        if (overrides[key] === null || overrides[key] === undefined) return;
+        if (key === 'table' && typeof overrides[key] === 'object') {
+            merged[key] = { ...(merged[key] || {}), ...overrides[key] };
+        } else {
+            merged[key] = overrides[key];
+        }
+    });
+    return merged;
+}
 
 // API: Import Docx to Markdown
 app.post('/api/import-docx', upload.single('file'), async (req, res) => {
