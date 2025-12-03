@@ -5,9 +5,9 @@ const path = require('path');
 const fs = require('fs');
 
 // Resolve the root of the docxjs-cli package when installed globally
-// This script would be in node_modules/docxjs-cli/bin/docxjs-web.js
-// So, the project root is path.join(__dirname, '..', '..')
-const packageRoot = path.resolve(__dirname, '..', '..');
+// This script is in [package_root]/bin/docxjs-web.js
+// So, the project root is path.join(__dirname, '..')
+const packageRoot = path.resolve(__dirname, '..');
 const serverAppPath = path.join(packageRoot, 'server', 'app.js');
 
 if (!fs.existsSync(serverAppPath)) {
