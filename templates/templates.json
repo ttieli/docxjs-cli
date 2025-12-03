@@ -1,13 +1,13 @@
 {
   "default": {
-    "description": "Base template with standard formatting",
-    "fontMain": "微软雅黑",
+    "description": "Base template with standard formatting (Minimalist Black)",
+    "fontMain": "Calibri",
     "colorMain": "000000",
-    "fontHeader1": "微软雅黑",
+    "fontHeader1": "Calibri",
     "colorHeader1": "000000",
-    "fontHeader2": "微软雅黑",
+    "fontHeader2": "Calibri",
     "colorHeader2": "000000",
-    "fontHeader3": "微软雅黑",
+    "fontHeader3": "Calibri",
     "colorHeader3": "000000",
     "fontSizeMain": 24,
     "fontSizeH1": 32,
@@ -30,7 +30,7 @@
       "cellAlign": "left"
     },
     "hyperlink": {
-      "color": "0563C1",
+      "color": "000000",
       "underline": true
     }
   },

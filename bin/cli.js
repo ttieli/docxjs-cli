@@ -62,32 +62,22 @@ function loadTemplates(customConfigPath) {
     let templateName = argv.template;
     const referenceDocPath = argv['reference-doc'];
 
-    if (referenceDocPath && !templateName) {
-        console.log(`🤖 Mode: Pure Clone`);
-        templateName = 'default'; 
-    } else if (templateName) {
-        console.log(`📝 Mode: Template/Hybrid (${templateName})`);
+    // Logic:
+    // 1. If input file exists AND template is specified -> Use it.
+    // 2. If input file exists AND NO template specified -> Use 'default' (Silent).
+    // 3. Interactive mode logic (currently unreachable due to demandCommand(1) but kept for safety).
+
+    if (!templateName) {
+        console.log(`ℹ️  No template specified. Using 'default' (Minimalist Black).`);
+        templateName = 'default';
     } else {
-        // Interactive Mode
-        console.log(`\n👋 欢迎使用 docxjs-cli 文档转换工具`);
-        const choices = availableTemplates.map(key => ({
-            name: `${key.padEnd(20)} - ${templates[key].description || "No desc"}`,
-            value: key
-        }));
-        
-        const answer = await inquirer.prompt([{
-            type: 'list',
-            name: 'selectedTemplate',
-            message: '请选择目标文档格式 (Select Template):',
-            choices: choices,
-            pageSize: 15
-        }]);
-        templateName = answer.selectedTemplate;
+        console.log(`📝 Mode: Template (${templateName})`);
     }
 
+    // If template not found, try fallback
     if (!templates[templateName]) {
-        console.error(`❌ Template '${templateName}' not found!`);
-        if (!templates['default']) process.exit(1);
+        console.warn(`⚠️ Template '${templateName}' not found. Falling back to 'default'.`);
+        templateName = 'default';
     }
 
     let currentStyle = { ...(templates[templateName] || templates['default']) };
