@@ -7,56 +7,49 @@ const os = require('os');
 const util = require('util');
 const { execFile } = require('child_process');
 const multer = require('multer');
+const mammoth = require('mammoth');
+const TurndownService = require('turndown');
+const { gfm } = require('turndown-plugin-gfm');
 
 const app = express();
 const execFileAsync = util.promisify(execFile);
 const upload = multer({
     storage: multer.memoryStorage(),
-    limits: { fileSize: 5 * 1024 * 1024 } // 5MB reference doc limit
+    limits: { fileSize: 10 * 1024 * 1024 } // Increased to 10MB for imports
 });
 
-app.use(express.json({ limit: '2mb' }));
-app.use(express.urlencoded({ extended: true, limit: '2mb' }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-const PUBLIC_DIR = path.join(__dirname, '..', 'public');
-if (fs.existsSync(PUBLIC_DIR)) {
-    app.use(express.static(PUBLIC_DIR));
-}
+// ... existing code ...
 
-function sanitizeFileName(name) {
-    if (!name) return 'output.docx';
-    const cleaned = name.replace(/[\\/]+/g, '').replace(/[^a-zA-Z0-9._-]/g, '_');
-    return cleaned || 'output.docx';
-}
-
-function resolvePythonPath() {
-    if (process.env.DOCXJS_PYTHON_PATH) return process.env.DOCXJS_PYTHON_PATH;
-    const projectVenv = path.join(__dirname, '..', 'venv', 'bin', 'python3');
-    if (fs.existsSync(projectVenv)) return projectVenv;
-    const globalEnv = path.join(process.env.HOME || process.env.USERPROFILE || '', '.docxjs-cli-env', 'bin', 'python3');
-    if (fs.existsSync(globalEnv)) return globalEnv;
-    return 'python3';
-}
-
-async function extractReferenceStyles(tempDocPath) {
-    const pythonPath = resolvePythonPath();
-    const extractorPath = path.join(__dirname, '..', 'style_extractor.py');
-    const { stdout } = await execFileAsync(pythonPath, [extractorPath, tempDocPath], { timeout: 12000 });
-    return JSON.parse(stdout);
-}
-
-function mergeStyles(baseStyle, overrides) {
-    const merged = { ...(baseStyle || {}) };
-    Object.keys(overrides || {}).forEach(key => {
-        if (overrides[key] === null || overrides[key] === undefined) return;
-        if (key === 'table' && typeof overrides[key] === 'object') {
-            merged[key] = { ...(merged[key] || {}), ...overrides[key] };
-        } else {
-            merged[key] = overrides[key];
+// API: Import Docx to Markdown
+app.post('/api/import-docx', upload.single('file'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded' });
         }
-    });
-    return merged;
-}
+
+        // 1. Convert Docx to HTML using Mammoth
+        const { value: html } = await mammoth.convertToHtml({ buffer: req.file.buffer });
+
+        // 2. Convert HTML to Markdown using Turndown
+        const turndownService = new TurndownService({
+            headingStyle: 'atx',
+            codeBlockStyle: 'fenced'
+        });
+        // Use GFM plugin for Tables support
+        turndownService.use(gfm);
+
+        const markdown = turndownService.turndown(html);
+
+        res.json({ markdown });
+
+    } catch (error) {
+        console.error("Import error:", error);
+        res.status(500).json({ error: 'Failed to parse Word document: ' + error.message });
+    }
+});
 
 // API: Convert
 // Supports JSON payloads or multipart/form-data (with optional referenceDoc)
