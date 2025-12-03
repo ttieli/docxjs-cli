@@ -2,11 +2,11 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
 const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
 const inquirer = require('inquirer');
 const { generateDocx } = require('../lib/core');
+const { extractStyles } = require('../lib/python-bridge');
 
 // --- 0. 加载配置 ---
 function loadTemplates(customConfigPath) {
@@ -82,24 +82,12 @@ function loadTemplates(customConfigPath) {
 
     let currentStyle = { ...(templates[templateName] || templates['default']) };
 
-    // --- 样式合并 (Python) ---
+    // --- 样式合并 (Python Bridge) ---
     if (referenceDocPath) {
         console.log(`🔍 Extracting styles from reference doc: ${referenceDocPath}...`);
         try {
-            const extractorPath = path.join(__dirname, '..', 'style_extractor.py'); // Adjust path
-            let pythonExecutable = 'python3'; 
-            if (process.env.DOCXJS_PYTHON_PATH) {
-                pythonExecutable = process.env.DOCXJS_PYTHON_PATH;
-            } else if (fs.existsSync(path.join(__dirname, '..', 'venv'))) {
-                pythonExecutable = path.join(__dirname, '..', 'venv', 'bin', 'python3');
-            } else {
-                const globalEnvPath = path.join(process.env.HOME || process.env.USERPROFILE, '.docxjs-cli-env', 'bin', 'python3');
-                if (fs.existsSync(globalEnvPath)) { pythonExecutable = globalEnvPath; }
-            }
-            
-            const pythonCmd = `"${pythonExecutable}" "${extractorPath}" "${referenceDocPath}"`;
-            const stdout = execSync(pythonCmd, { encoding: 'utf-8' });
-            const extractedStyles = JSON.parse(stdout);
+            // Use the unified bridge
+            const extractedStyles = await extractStyles(referenceDocPath);
 
             if (extractedStyles.error) {
                 console.warn(`⚠️ Style extraction failed: ${extractedStyles.error}`);
