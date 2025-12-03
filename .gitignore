@@ -2,9 +2,12 @@ node_modules/
 .DS_Store
 *.log
 output*.docx
+test_*.docx
+server_*.log
 *.pyc
 __pycache__/
 venv/
+.docxjs-cli-env/
 .env
 
 # User-specified ignores
