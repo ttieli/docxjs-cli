@@ -22,16 +22,12 @@ function loadTemplates(customConfigPath) {
     if (fs.existsSync(templatesDir)) {
         try {
             const files = fs.readdirSync(templatesDir).filter(file => file.toLowerCase().endsWith('.json'));
-            // 排序以确保加载顺序一致 (例如 common_styles.json 在 templates.json 之前) 
             files.sort(); 
-            
             files.forEach(file => {
                 const fullPath = path.join(templatesDir, file);
                 try {
                     const fileContent = JSON.parse(fs.readFileSync(fullPath, 'utf-8'));
-                    // 合并模板 (后加载的同名key会覆盖先加载的)
                     templates = { ...templates, ...fileContent };
-                    // console.log(`Loaded templates from: ${file}`); // 可选 debug
                 } catch (e) {
                     console.warn(`⚠️ Warning: Failed to parse template file '${file}': ${e.message}`);
                 }
@@ -51,7 +47,7 @@ function loadTemplates(customConfigPath) {
                 const userTemplates = JSON.parse(fs.readFileSync(absPath, 'utf-8'));
                 console.log(`🎨 Loaded custom configuration from: ${customConfigPath}`);
                 templates = { ...templates, ...userTemplates };
-            } catch (e) { console.error(`❌ Failed to load custom config ${customConfigPath}:`, e.message); }
+            } catch (e) { console.error(`❌ Failed to load custom config ${customConfigPath}: `, e.message); }
         } else { console.warn(`⚠️ Custom config file not found: ${customConfigPath}`); }
     }
     return templates;
@@ -92,7 +88,8 @@ function loadTemplates(customConfigPath) {
     } else {
         // Interactive Mode
         mode = "Interactive";
-        console.log(`\n👋 欢迎使用 docxjs-cli 文档转换工具`);
+        console.log(`
+👋 欢迎使用 docxjs-cli 文档转换工具`);
         const choices = availableTemplates.map(key => ({
             name: `${key.padEnd(20)} - ${templates[key].description || "No desc"}`,
             value: key
@@ -103,7 +100,7 @@ function loadTemplates(customConfigPath) {
             name: 'selectedTemplate',
             message: '请选择目标文档格式 (Select Template):',
             choices: choices,
-            pageSize: 15 // 增加每页显示数量，方便查看更多模板
+            pageSize: 15
         }]);
         templateName = answer.selectedTemplate;
     }
@@ -143,7 +140,6 @@ function loadTemplates(customConfigPath) {
                         } else {
                              currentStyle[key] = extractedStyles[key];
                         }
-                        console.log(`   -> Overrided ${key}`);
                     }
                 });
                  if (!extractedStyles.fontH1 && extractedStyles.detailed_styles_info) {
@@ -315,7 +311,7 @@ function loadTemplates(customConfigPath) {
                  const runs = processInline(tokens[i + 1]);
                  let paraConfig = {
                      children: runs,
-                     spacing: {
+                     spacing: { 
                          line: currentStyle.lineSpacing,
                          before: bodySpacing.before,
                          after: bodySpacing.after
@@ -345,7 +341,7 @@ function loadTemplates(customConfigPath) {
         else if (token.type === 'thead_open') { tableBuffer.isHeader = true; }
         else if (token.type === 'thead_close') { tableBuffer.isHeader = false; }
         else if (token.type === 'tr_open') { if (tableBuffer) tableBuffer.currentRow = []; }
-        else if (token.type === 'th_open' || token.type === 'td_open') {
+        else if (token.type === 'th_open' || token.type === 'td_open') { 
             if (tableBuffer && tableBuffer.currentRow) tableBuffer.currentRow.push(tokens[i + 1].content);
         }
         else if (token.type === 'tr_close') {

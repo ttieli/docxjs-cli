@@ -3,14 +3,16 @@
   "version": "1.1.0",
   "description": "Markdown to Docx converter with Chinese Official Document Style support",
   "bin": {
-    "docxjs": "./docxjs-cli.js"
+    "docxjs": "./bin/cli.js",
+    "docxjs-web": "./bin/docxjs-web.js"
   },
   "files": [
     "docxjs-cli.js",
     "style_extractor.py"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server/app.js"
   },
   "keywords": [
     "docx",
@@ -23,8 +25,10 @@
   "type": "commonjs",
   "dependencies": {
     "docx": "^9.1.0",
+    "express": "^5.2.1",
     "inquirer": "^8.2.5",
     "markdown-it": "^14.1.0",
+    "multer": "^2.0.2",
     "yargs": "^17.7.2"
   }
 }

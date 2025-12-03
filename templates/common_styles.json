@@ -1,13 +1,13 @@
 {
   "academic_paper_en": {
     "description": "英文学术论文 (Academic APA - Times New Roman)",
-    "fontMain": "Times New Roman",
+    "fontMain": "Cambria",
     "colorMain": "000000",
-    "fontHeader1": "Arial",
+    "fontHeader1": "Calibri",
     "colorHeader1": "000000",
-    "fontHeader2": "Arial",
+    "fontHeader2": "Calibri",
     "colorHeader2": "000000",
-    "fontHeader3": "Arial",
+    "fontHeader3": "Calibri",
     "colorHeader3": "000000",
     "fontSizeMain": 24, 
     "fontSizeH1": 32,
@@ -73,7 +73,7 @@
   },
   "staff_handbook_cn": {
     "description": "员工手册/内部便签 (中文楷体)",
-    "fontMain": "楷体_GB2312",
+    "fontMain": "仿宋_GB2312",
     "colorMain": "000000",
     "fontHeader1": "黑体",
     "colorHeader1": "000000",
