@@ -94,7 +94,7 @@ async function callConvert(data) {
 1.  安装打包工具：`pip install pyinstaller`
 2.  **新增** `lib/python-bridge.js`：封装 Python 调用的路径判断逻辑。
 3.  **修改** `server/app.js` 和 `bin/cli.js`：将直接写死的 `exec('python3 ...')` 替换为调用 `lib/python-bridge.js`。
-    *   *此时 CLI 和 Web 依然正常工作，只是调用方式变灵活了。*
+    *   *验证点：此时 CLI 和 Web 必须依然正常工作，功能无回归。*
 
 ### 第二阶段：引入 Electron 壳
 目标：增加一个新的启动方式，不影响旧的。
@@ -105,6 +105,7 @@ async function callConvert(data) {
     *   它直接引用 `lib/core.js` 和 `lib/template-manager.js`。
     *   它监听 `ipcMain.handle('convert')` 事件，并在事件处理函数中直接调用核心逻辑。
 3.  **修改** `public/index.html`：增加环境检测逻辑（如上文所述），如果是 Electron 环境则走 IPC，否则走 Fetch。
+    *   *验证点：在浏览器中打开 http://localhost:3000，必须依然正常工作。*
 
 ### 第三阶段：打包与发布
 目标：生成最终安装包。
@@ -114,6 +115,7 @@ async function callConvert(data) {
 3.  运行构建：
     *   `npm run dist:mac` -> `.dmg`
     *   `npm run dist:win` -> `.exe`
+    *   *验证点：安装包在目标机器（无 Node/Python 环境）上能正常运行。*
 
 ## 5. 多架构支持分析 (Windows x86 vs ARM)
 

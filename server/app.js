@@ -1,18 +1,16 @@
 const express = require('express');
 const { generateDocx } = require('../lib/core');
 const templateManager = require('../lib/template-manager');
+const { extractStyles } = require('../lib/python-bridge');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
-const util = require('util');
-const { execFile } = require('child_process');
 const multer = require('multer');
 const mammoth = require('mammoth');
 const TurndownService = require('turndown');
 const { gfm } = require('turndown-plugin-gfm');
 
 const app = express();
-const execFileAsync = util.promisify(execFile);
 const upload = multer({
     storage: multer.memoryStorage(),
     limits: { fileSize: 10 * 1024 * 1024 } // Increased to 10MB for imports
@@ -30,22 +28,6 @@ function sanitizeFileName(name) {
     if (!name) return 'output.docx';
     const cleaned = name.replace(/[\\/]+/g, '').replace(/[^a-zA-Z0-9._-]/g, '_');
     return cleaned || 'output.docx';
-}
-
-function resolvePythonPath() {
-    if (process.env.DOCXJS_PYTHON_PATH) return process.env.DOCXJS_PYTHON_PATH;
-    const projectVenv = path.join(__dirname, '..', 'venv', 'bin', 'python3');
-    if (fs.existsSync(projectVenv)) return projectVenv;
-    const globalEnv = path.join(process.env.HOME || process.env.USERPROFILE || '', '.docxjs-cli-env', 'bin', 'python3');
-    if (fs.existsSync(globalEnv)) return globalEnv;
-    return 'python3';
-}
-
-async function extractReferenceStyles(tempDocPath) {
-    const pythonPath = resolvePythonPath();
-    const extractorPath = path.join(__dirname, '..', 'style_extractor.py');
-    const { stdout } = await execFileAsync(pythonPath, [extractorPath, tempDocPath], { timeout: 12000 });
-    return JSON.parse(stdout);
 }
 
 function mergeStyles(baseStyle, overrides) {
@@ -123,7 +105,9 @@ app.post('/api/convert', upload.single('referenceDoc'), async (req, res) => {
             tempDocPath = path.join(os.tmpdir(), `reference-${Date.now()}-${Math.random().toString(16).slice(2)}.docx`);
             await fs.promises.writeFile(tempDocPath, req.file.buffer);
             try {
-                const extracted = await extractReferenceStyles(tempDocPath);
+                // Use the new Bridge instead of local execution logic
+                const extracted = await extractStyles(tempDocPath);
+                
                 if (!extracted.error) {
                     finalStyle = mergeStyles(finalStyle, extracted);
                     if (!extracted.fontH1 && extracted.detailed_styles_info) {
