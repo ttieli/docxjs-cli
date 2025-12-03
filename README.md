@@ -99,22 +99,34 @@ Then access **http://localhost:3000** in your browser.
 ---
 
 <a name="how-it-works"></a>
-## ⚙️ How It Works / 工作原理
+## ⚙️ Architecture & Processing Flow / 架构与流程
 
-This tool leverages a powerful **Node.js + Python hybrid architecture** to achieve high-fidelity Docx generation with advanced style parsing.
+This tool uses a **Hybrid Node.js + Python** architecture to achieve high-fidelity document processing.
 
-1.  **CLI Execution**: User runs `docxjs input.md -o output.docx [-t template] [-r reference.docx] [-c custom_config.json]`.
-2.  **Node.js Initiation**: The main `docxjs-cli.js` (Node.js) script starts, parsing command-line arguments.
-3.  **Template Loading**: Loads built-in templates from `templates/templates.json`. If `--config` is provided, it also loads user-defined templates.
-4.  **Base Style Application**: The template specified by `-t` (e.g., `gov_official_red`) is loaded as the base style configuration.
-5.  **Reference Doc Style Extraction (Python)**:
-    *   If a `--reference-doc` is provided, `docxjs-cli.js` (Node.js) spawns a child process to execute `style_extractor.py` (Python).
-    *   `style_extractor.py` uses the `python-docx` library to open the reference `.docx` file.
-    *   It extracts crucial style properties (e.g., `Normal` and `Heading 1`'s fonts, sizes, line spacing, page margins) and outputs them as a JSON string to `stdout`.
-6.  **Style Merging**: `docxjs-cli.js` (Node.js) receives and parses this JSON data. It then intelligently merges these extracted styles, **overriding** the base template's corresponding properties.
-7.  **Markdown Parsing**: The input Markdown file is read and parsed into an Abstract Syntax Tree (AST) using `markdown-it`.
-8.  **Docx Generation**: `docxjs-cli.js` iterates through the Markdown AST. For each Markdown element (headings, paragraphs, lists, tables, **inline code**), it maps it to a `docx.js` object, applying the now finalized style configuration (base template + reference doc overrides).
-9.  **Output**: Finally, `docx.js` builds the complete `.docx` document in memory, which is then written to the specified output file.
+### 1. Core Dependencies / 核心依赖
+
+| Component | Technology | Key Libraries | Purpose |
+| :--- | :--- | :--- | :--- |
+| **Web/CLI** | **Node.js** | `express`, `yargs` | Application entry, server, and argument parsing. |
+| **Doc Generator** | **Node.js** | `markdown-it`, `docx` | Parses Markdown AST and programmatically builds `.docx` files. |
+| **Doc Importer** | **Node.js** | `mammoth`, `turndown` | Converts uploaded Word docs to HTML, then to Markdown for editing. |
+| **Style Engine** | **Python** | `python-docx` | Parses `.docx` binaries to extract visual styles (fonts, margins, sizes). |
+
+### 2. Processing Flow / 处理流程
+
+#### A. Import Flow (Word → Markdown)
+1.  **Upload**: User uploads a `.docx` file via the Web UI.
+2.  **Conversion**:
+    *   **Content**: Server uses `mammoth.js` to convert the Docx content to HTML, then `turndown` converts it to Markdown.
+    *   **Styles**: Server calls the Python script (`style_extractor.py`) to analyze the Docx and extract fonts, margins, and table styles into a JSON object.
+3.  **Result**: The user gets editable Markdown in the editor, and the "Reference Doc" is automatically set to preserve the original styles.
+
+#### B. Export Flow (Markdown → Docx)
+1.  **Input**: User submits Markdown content + a Template Name (or Reference Doc).
+2.  **Style Merging**:
+    *   Base styles are loaded from the selected Template (e.g., `gov_official_red`).
+    *   If a Reference Doc is present, its extracted styles override the template defaults.
+3.  **Generation**: `docx.js` builds a brand new `.docx` file, applying the merged styles to the Markdown content.
 
 ---
 
