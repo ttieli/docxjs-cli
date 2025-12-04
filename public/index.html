@@ -601,6 +601,8 @@
     </div>
   </div>
 
+  <!-- API Adapter -->
+  <script src="api-adapter.js"></script>
   <script>
     const templateSelect = document.getElementById('templateSelect');
     const statusEl = document.getElementById('status');
@@ -627,20 +629,15 @@
       // If it's a Word document
       if (file.name.toLowerCase().endsWith('.docx')) {
         setStatus('正在解析 Word 文档...', 'info');
-        const formData = new FormData();
-        formData.append('file', file);
 
         try {
-          // 1. Get Markdown Content from Backend
-          const res = await fetch('/api/import-docx', { method: 'POST', body: formData });
-          if (!res.ok) throw new Error('Word 解析失败');
-          const data = await res.json();
+          // 1. Get Markdown Content from Backend via API Adapter
+          const data = await API.importDocx(file);
           
           markdownInput.value = data.markdown || '';
           setStatus('Word 导入成功！已转换为 Markdown。', 'success');
 
           // 2. Auto-set as Reference Doc for Style Extraction
-          // We create a new DataTransfer to programmatically set the file input
           const dt = new DataTransfer();
           dt.items.add(file);
           referenceInput.files = dt.files;
@@ -712,9 +709,9 @@
 
     async function loadTemplates() {
       try {
-        const res = await fetch('/api/templates');
-        if (!res.ok) throw new Error('接口返回异常');
-        const data = await res.json();
+        // Use API Adapter
+        const data = await API.getTemplates();
+
         templatesCache = {};
         templateSelect.innerHTML = '';
         data.forEach(item => { templatesCache[item.id] = item.style || {}; });
@@ -763,29 +760,18 @@
       const finalName = (safeBase || DEFAULT_BASE_NAME) + '.docx';
       const styleConfig = buildStyleConfig();
 
-      const formData = new FormData();
-      formData.append('markdown', markdown);
-      if (templateName) formData.append('templateName', templateName);
-      if (finalName) formData.append('filename', finalName);
-      if (referenceDoc) formData.append('referenceDoc', referenceDoc);
-      if (styleConfig && Object.keys(styleConfig).length > 0) {
-        formData.append('styleConfig', JSON.stringify(styleConfig));
-      }
-
       convertBtn.disabled = true;
       setStatus('转换中，请稍候...', '');
       try {
-        const res = await fetch('/api/convert', { method: 'POST', body: formData });
-        if (!res.ok) {
-          const errText = await res.text();
-          let msg = '转换失败';
-          try {
-            const errJson = JSON.parse(errText);
-            msg = errJson.error || msg;
-          } catch (_) { msg = errText || msg; }
-          throw new Error(msg);
-        }
-        const blob = await res.blob();
+        // Use API Adapter
+        const blob = await API.convert({
+            markdown,
+            templateName,
+            filename: finalName,
+            referenceDoc,
+            styleConfig
+        });
+        
         downloadBlob(blob, finalName);
         setStatus('转换完成，已触发下载。', 'success');
       } catch (err) {
