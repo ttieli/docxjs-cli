@@ -242,6 +242,7 @@ function loadTemplates(customConfigPath) {
     }
     
     let tableBuffer = null;
+    let inListItem = false;
 
     // Default spacing configs if not provided
     const headerSpacing = currentStyle.headerSpacing || { before: 200, after: 200 };
@@ -309,31 +310,39 @@ function loadTemplates(customConfigPath) {
         else if (token.type === 'paragraph_open') {
             if (!tableBuffer) {
                  const runs = processInline(tokens[i + 1]);
-                 let paraConfig = {
-                     children: runs,
-                     spacing: { 
-                         line: currentStyle.lineSpacing,
-                         before: bodySpacing.before,
-                         after: bodySpacing.after
-                     },
-                 };
-                 if (currentStyle.redHeader) {
-                     paraConfig.indent = { firstLine: 640 };
-                     paraConfig.alignment = AlignmentType.JUSTIFIED;
-                 } else if (currentStyle.firstLineIndent) {
-                     paraConfig.indent = { firstLine: currentStyle.firstLineIndent };
+                 let paraConfig;
+                 
+                 if (inListItem) {
+                    paraConfig = {
+                        children: runs,
+                        bullet: { level: 0 }
+                    };
+                    inListItem = false;
+                 } else {
+                    paraConfig = {
+                        children: runs,
+                        spacing: { 
+                            line: currentStyle.lineSpacing,
+                            before: bodySpacing.before,
+                            after: bodySpacing.after
+                        },
+                    };
+                    if (currentStyle.redHeader) {
+                        paraConfig.indent = { firstLine: 640 };
+                        paraConfig.alignment = AlignmentType.JUSTIFIED;
+                    } else if (currentStyle.firstLineIndent) {
+                        paraConfig.indent = { firstLine: currentStyle.firstLineIndent };
+                    }
                  }
                  docChildren.push(new Paragraph(paraConfig));
                  i += 2;
             }
         }
         else if (token.type === 'list_item_open') {
-            let nextTokenIndex = i + 1;
-            while(tokens[nextTokenIndex] && tokens[nextTokenIndex].type !== 'inline') nextTokenIndex++;
-            if(tokens[nextTokenIndex]) {
-                 const runs = processInline(tokens[nextTokenIndex]);
-                 docChildren.push(new Paragraph({ children: runs, bullet: { level: 0 } }));
-            }
+            inListItem = true;
+        }
+        else if (token.type === 'list_item_close') {
+            inListItem = false;
         }
         else if (token.type === 'table_open') { 
             tableBuffer = { rows: [], isHeader: false }; 
