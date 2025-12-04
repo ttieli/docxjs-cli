@@ -1,6 +1,7 @@
 {
   "name": "docxjs-cli",
   "version": "1.0.0",
+  "main": "electron/main.js",
   "description": "Markdown to Docx converter with Chinese Official Document Style support",
   "bin": {
     "docxjs": "./bin/cli.js",
@@ -17,7 +18,11 @@
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server/app.js"
+    "start": "node server/app.js",
+    "start:electron": "electron electron/main.js",
+    "dist:mac": "electron-builder --mac",
+    "dist:win": "electron-builder --win",
+    "dist:linux": "electron-builder --linux"
   },
   "keywords": [
     "docx",
@@ -38,5 +43,46 @@
     "turndown": "^7.2.2",
     "turndown-plugin-gfm": "^1.0.2",
     "yargs": "^17.7.2"
+  },
+  "build": {
+    "appId": "com.docxjs.cli",
+    "productName": "DocxJS Converter",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "package.json",
+      "lib/**/*",
+      "server/**/*",
+      "public/**/*",
+      "templates/**/*",
+      "electron/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "bin/",
+        "to": "bin/",
+        "filter": [
+          "style_extractor*",
+          "!**/*.js"
+        ]
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": [
+        "dmg"
+      ]
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
+  },
+  "devDependencies": {
+    "electron": "^39.2.5",
+    "electron-builder": "^26.0.12"
   }
 }
