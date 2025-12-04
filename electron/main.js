@@ -24,9 +24,27 @@ function mergeStyles(baseStyle, overrides) {
 }
 
 function createWindow() {
+    // 1. Create Splash Window
+    const splash = new BrowserWindow({
+        width: 400,
+        height: 300,
+        transparent: false,
+        frame: false,
+        alwaysOnTop: true,
+        center: true,
+        resizable: false,
+        webPreferences: {
+            nodeIntegration: false,
+            contextIsolation: true
+        }
+    });
+    splash.loadFile(path.join(__dirname, 'splash.html'));
+
+    // 2. Create Main Window (Hidden initially)
     const win = new BrowserWindow({
         width: 1200,
         height: 800,
+        show: false, // Hide initially
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: false,
@@ -36,6 +54,12 @@ function createWindow() {
 
     // Load the local index.html
     win.loadFile(path.join(__dirname, '../public/index.html'));
+
+    // 3. Swap windows when main is ready
+    win.once('ready-to-show', () => {
+        splash.destroy();
+        win.show();
+    });
 
     // Open DevTools (optional, for debugging)
     // win.webContents.openDevTools();
