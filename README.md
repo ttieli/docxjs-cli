@@ -15,6 +15,7 @@ A powerful, **hybrid CLI tool built with Node.js (`docx.js`) and Python (`python
 
 ### ✨ Features
 
+*   **Desktop Application (New!)**: A standalone Electron app for Windows & macOS. No Node/Python installation required.
 *   **Web Interface**: A built-in, user-friendly Web UI for visual template selection, style editing, and file conversion.
 *   **Markdown to Docx**: Robust parsing via `markdown-it` with support for bold, italic, lists, tables, and **inline code (`code`)**.
 *   **Official Government Style**: Built-in `gov_official_red` template that enforces strict formatting:
@@ -26,9 +27,27 @@ A powerful, **hybrid CLI tool built with Node.js (`docx.js`) and Python (`python
     *   Uses a Python helper script (`style_extractor.py`) to parse an existing `.docx` file (Reference Doc).
     *   Extracts fonts (including complex Chinese fonts), sizes, and margins to override template defaults.
 
-### 🛠 Prerequisites
+### 🖥️ Desktop Application
 
-This is a hybrid tool requiring both Node.js and Python environments.
+We now provide a compiled desktop application (Windows .exe / macOS .dmg).
+
+**Download**: Check the [GitHub Releases](https://github.com/ttieli/docxjs-cli/releases) page.
+
+**Build from Source**:
+```bash
+# Install dependencies
+npm install
+
+# Build for macOS
+npm run dist:mac
+
+# Build for Windows (Requires Wine on macOS, or run on Windows)
+npm run dist:win
+```
+
+### 🛠 Prerequisites (CLI Only)
+
+This is a hybrid tool requiring both Node.js and Python environments **(Only for CLI/Web source usage. The Desktop App has no prerequisites)**.
 
 1.  **Node.js** (v14 or higher)
 2.  **Python 3.x**
@@ -135,6 +154,7 @@ This tool uses a **Hybrid Node.js + Python** architecture to achieve high-fideli
 
 ### ✨ 核心特性
 
+*   **桌面客户端 (新增!)**：支持 Windows 和 macOS 的独立 Electron 应用。无需安装 Node/Python 环境，双击即用。
 *   **Web 可视化界面**：内置好用的 Web UI，支持可视化选择模板、微调样式和文件转换。
 *   **Markdown 转 Docx**：基于 `markdown-it` 的稳定解析，完美支持表格加粗、斜体等内联样式，以及**行内代码 (`code`)**。
 *   **党政机关公文标准**：内置 `gov_official_red` (红头公文) 模板，严格遵循国家公文格式标准：
@@ -146,18 +166,27 @@ This tool uses a **Hybrid Node.js + Python** architecture to achieve high-fideli
     *   利用 Python 脚本 (`style_extractor.py`) 解析现有的 `.docx` 参考文档。
     *   智能提取正文字体（如“宋体”）、字号和页边距，并覆盖预设模板。
 
-### 🆚 为什么选择 docxjs-cli 而不是 Pandoc？
+### 🖥️ 桌面客户端
 
-| 功能特性 | Pandoc | docxjs-cli |
-| :--- | :--- | :--- |
-| **表格样式控制** | ❌ **难以控制**。默认使用 Word 表格样式，难以强制指定边框（如全黑实线网格）。 | ✅ **精确控制**。代码级控制表格渲染，可强制应用公文要求的全黑实线边框、特定列宽和对齐方式。 |
-| **党政机关公文格式** | ❌ **配置复杂**。需要制作非常标准的 `reference.docx`，且必须手动修改内部 XML 样式名。 | ✅ **开箱即用**。内置 `gov_official_red` 模板，硬编码实现了红头、仿宋字体、严格页边距和行距。 |
-| **参考文档兼容性** | ⚠️ **挑剔**。要求参考文档必须是“干净”的标准 Docx。 | ✅ **宽容灵活**。利用 Python 脚本“吸取”文档的视觉属性（字体、字号、边距），即使文档样式命名不规范也能工作。 |
-| **交互体验** | ❌ **无**。纯命令行参数。 | ✅ **友好**。提供交互式菜单选择模板。 |
+我们现在提供编译好的桌面安装包 (Windows .exe / macOS .dmg)。
 
-### 🛠 前置要求
+**下载地址**: 请访问 [GitHub Releases](https://github.com/ttieli/docxjs-cli/releases) 页面。
 
-本工具采用 Node.js + Python 混合架构，以实现最佳的生成与解析能力。
+**源码构建**:
+```bash
+# 安装依赖
+npm install
+
+# 构建 macOS 版本
+npm run dist:mac
+
+# 构建 Windows 版本 (macOS 上需要 Wine，或者直接在 Windows 上运行)
+npm run dist:win
+```
+
+### 🛠 前置要求 (仅限 CLI/Web 源码模式)
+
+本工具采用 Node.js + Python 混合架构，以实现最佳的生成与解析能力。**(使用桌面客户端无需这些前置要求)**
 
 1.  **Node.js** (v14 以上)
 2.  **Python 3.x**
