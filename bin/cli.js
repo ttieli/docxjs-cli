@@ -113,7 +113,8 @@ function loadTemplates(customConfigPath) {
     // --- 调用 Core ---
     try {
         const mdContent = fs.readFileSync(inputPath, 'utf-8');
-        const buffer = await generateDocx(mdContent, currentStyle);
+        const baseDir = path.dirname(path.resolve(inputPath));
+        const buffer = await generateDocx(mdContent, currentStyle, baseDir);
         fs.writeFileSync(outputPath, buffer);
         console.log(`✅ Success! Created ${outputPath}`);
     } catch (e) {
