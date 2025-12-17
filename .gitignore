@@ -23,4 +23,8 @@ test.md
 output_base.docx
 output_ref.docx
 test_output.docx
-test_with_ref.docx
+test_with_ref.docxrelease_assets/
+sample data/*.docx
+sample data/*.dmg
+sample data/*.exe
+preview.docx

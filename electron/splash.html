@@ -1,84 +1,106 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loading...</title>
+    <title>DocxJS Converter Loading</title>
     <style>
         body {
             margin: 0;
+            padding: 0;
             height: 100vh;
             display: flex;
             flex-direction: column;
-            align-items: center;
             justify-content: center;
-            background-color: #FAFAFA; /* Matches app bg */
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            align-items: center;
+            background-color: #F3F4F6;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            color: #1F2937;
             user-select: none;
-            -webkit-app-region: drag; /* Allow dragging the splash */
+            -webkit-app-region: drag; /* 允许拖动窗口 */
         }
-        
+
+        .container {
+            text-align: center;
+        }
+
         .logo {
             width: 80px;
             height: 80px;
-            background-color: #4A78A6;
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 40px;
-            font-weight: bold;
-            box-shadow: 0 10px 25px rgba(74, 120, 166, 0.3);
             margin-bottom: 24px;
+            color: #2563EB;
         }
 
         h1 {
             font-size: 20px;
-            color: #333;
-            margin: 0 0 8px 0;
             font-weight: 600;
+            margin: 0 0 8px 0;
+            color: #111827;
         }
 
-        p {
+        .status-text {
             font-size: 13px;
-            color: #666;
-            margin: 0;
+            color: #6B7280;
+            margin-bottom: 32px;
+            min-height: 20px;
         }
 
-        .loader {
-            margin-top: 32px;
+        /* Spinner Animation */
+        .spinner {
             width: 40px;
-            height: 4px;
-            background: #E0E0E0;
-            border-radius: 2px;
-            overflow: hidden;
-            position: relative;
+            height: 40px;
+            margin: 0 auto;
+            border: 3px solid rgba(37, 99, 235, 0.1);
+            border-radius: 50%;
+            border-top-color: #2563EB;
+            animation: spin 1s ease-in-out infinite;
         }
 
-        .loader::after {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            width: 40%;
-            background-color: #4A78A6;
-            border-radius: 2px;
-            animation: loading 1.5s infinite ease-in-out;
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
-        @keyframes loading {
-            0% { left: -40%; }
-            50% { left: 100%; }
-            100% { left: 100%; }
+        /* Fade In */
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
-    <div class="logo">D</div>
-    <h1>DocxJS</h1>
-    <p>Initializing environment...</p>
-    <div class="loader"></div>
+    <div class="container fade-in">
+        <!-- Logo Icon -->
+        <svg class="logo" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg>
+
+        <h1>DocxJS Converter</h1>
+        <div class="status-text" id="status">正在启动引擎...</div>
+        
+        <div class="spinner"></div>
+    </div>
+
+    <script>
+        const messages = [
+            "正在加载资源...",
+            "初始化排版引擎...",
+            "准备字体缓存...",
+            "即将完成..."
+        ];
+        
+        let i = 0;
+        const statusEl = document.getElementById('status');
+        
+        // 简单的文字轮播，每800ms切换一次，让用户感觉应用在“工作”
+        setInterval(() => {
+            if (i < messages.length) {
+                statusEl.textContent = messages[i];
+                i++;
+            }
+        }, 800);
+    </script>
 </body>
 </html>

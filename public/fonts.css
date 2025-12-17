@@ -1,0 +1,58 @@
+/* 
+  此文件用于加载本地化字体以供 docx-preview 渲染使用。
+  使用开源字体 (Source Han, Fandol) 替代受版权保护的商业字体。
+*/
+
+/* --- 仿宋系列 --- */
+
+@font-face {
+  font-family: '仿宋_GB2312';
+  /* 使用 FandolFang (饭朵仿宋) 替代 */
+  src: url('fonts/FandolFang-Regular.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* --- 宋体/标题系列 --- */
+
+@font-face {
+  font-family: '方正小标宋简体';
+  /* 使用 FandolSong-Bold (饭朵宋体粗体) 替代，效果非常接近 */
+  src: url('fonts/FandolSong-Bold.otf') format('opentype');
+  font-weight: normal; /* 字体本身是粗体，所以这里设为 normal */
+  font-style: normal;
+}
+
+@font-face {
+  font-family: '宋体';
+  /* 使用 Source Han Serif (思源宋体) 替代 */
+  src: url('fonts/SourceHanSerifCN-Regular.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* --- 黑体/无衬线系列 --- */
+
+@font-face {
+  font-family: '黑体';
+  /* 使用 Source Han Sans (思源黑体) 替代 */
+  src: url('fonts/SourceHanSansCN-Regular.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: '微软雅黑';
+  /* 使用 Source Han Sans (思源黑体) 替代 */
+  src: url('fonts/SourceHanSansCN-Regular.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* --- 英文回退 (可选) --- */
+/* 如果没有专门的英文 OTF，可以使用思源系列覆盖 */
+@font-face {
+  font-family: 'Calibri';
+  src: url('fonts/SourceHanSansCN-Regular.otf') format('opentype');
+  unicode-range: U+0000-00FF; /* 仅覆盖拉丁字符 */
+}

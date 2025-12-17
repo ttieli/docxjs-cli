@@ -1,5 +1,6 @@
 const express = require('express');
 const { generateDocx } = require('../lib/core');
+const { generatePreviewBuffer } = require('../lib/sample-generator');
 const templateManager = require('../lib/template-manager');
 const { extractStyles } = require('../lib/python-bridge');
 const path = require('path');
@@ -43,6 +44,21 @@ function mergeStyles(baseStyle, overrides) {
     return merged;
 }
 
+// API: Preview (Dynamic)
+app.post('/api/preview/dynamic', async (req, res) => {
+    try {
+        const { styleConfig, markdown } = req.body;
+        // Limit markdown length for preview performance if needed, 
+        // currently passing full content as requested.
+        const buffer = await generatePreviewBuffer(styleConfig || {}, markdown);
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        res.send(buffer);
+    } catch (error) {
+        console.error("Preview generation error:", error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // API: Import Docx to Markdown
 app.post('/api/import-docx', upload.single('file'), async (req, res) => {
     try {
@@ -51,7 +67,11 @@ app.post('/api/import-docx', upload.single('file'), async (req, res) => {
         }
 
         // 1. Convert Docx to HTML using Mammoth
-        const { value: html } = await mammoth.convertToHtml({ buffer: req.file.buffer });
+        // Optimize: Ignore images to avoid long base64 strings
+        const options = {
+            ignoreImage: true 
+        };
+        const { value: html } = await mammoth.convertToHtml({ buffer: req.file.buffer }, options);
 
         // 2. Convert HTML to Markdown using Turndown
         const turndownService = new TurndownService({
@@ -60,6 +80,14 @@ app.post('/api/import-docx', upload.single('file'), async (req, res) => {
         });
         // Use GFM plugin for Tables support
         turndownService.use(gfm);
+
+        // Explicitly discard images
+        turndownService.addRule('removeImages', {
+            filter: 'img',
+            replacement: function (content, node) {
+                return '[图片]';
+            }
+        });
 
         const markdown = turndownService.turndown(html);
 
