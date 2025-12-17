@@ -1,5 +1,6 @@
 const express = require('express');
 const { generateDocx } = require('../lib/core');
+const { generatePreviewBuffer } = require('../lib/sample-generator');
 const templateManager = require('../lib/template-manager');
 const { extractStyles } = require('../lib/python-bridge');
 const path = require('path');
@@ -42,6 +43,19 @@ function mergeStyles(baseStyle, overrides) {
     });
     return merged;
 }
+
+// API: Preview (Dynamic)
+app.post('/api/preview/dynamic', async (req, res) => {
+    try {
+        const { styleConfig } = req.body;
+        const buffer = await generatePreviewBuffer(styleConfig || {});
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        res.send(buffer);
+    } catch (error) {
+        console.error("Preview generation error:", error);
+        res.status(500).json({ error: error.message });
+    }
+});
 
 // API: Import Docx to Markdown
 app.post('/api/import-docx', upload.single('file'), async (req, res) => {

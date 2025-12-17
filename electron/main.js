@@ -6,6 +6,7 @@ const mammoth = require('mammoth');
 const TurndownService = require('turndown');
 const { gfm } = require('turndown-plugin-gfm');
 const { generateDocx } = require('../lib/core');
+const { generatePreviewBuffer } = require('../lib/sample-generator');
 const templateManager = require('../lib/template-manager');
 const { extractStyles } = require('../lib/python-bridge');
 
@@ -167,5 +168,16 @@ ipcMain.handle('convert', async (event, { markdown, templateName, styleConfig, r
         if (tempDocPath) {
             fs.promises.unlink(tempDocPath).catch(() => {});
         }
+    }
+});
+
+// 4. Preview (Dynamic)
+ipcMain.handle('preview-template-dynamic', async (event, { styleConfig }) => {
+    try {
+        const buffer = await generatePreviewBuffer(styleConfig || {});
+        return buffer;
+    } catch (error) {
+        console.error('Preview error:', error);
+        throw new Error(error.message);
     }
 });
