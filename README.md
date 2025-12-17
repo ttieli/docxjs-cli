@@ -2,7 +2,7 @@
 
 [中文说明](#中文说明) | [English](#english)
 
-**Current Version / 当前版本**: `1.1.0`
+**Current Version / 当前版本**: `1.2.0-beta.6`
 
 A powerful, **hybrid CLI tool built with Node.js (`docx.js`) and Python (`python-docx`)** that converts Markdown to Word (.docx) documents. It combines the generation capabilities of `docx.js` (Node.js) with the style parsing capabilities of `python-docx` (Python) to deliver high-fidelity documents, specifically optimized for **Chinese Official Document formats (党政机关公文格式)**.
 
@@ -15,14 +15,18 @@ A powerful, **hybrid CLI tool built with Node.js (`docx.js`) and Python (`python
 
 ### ✨ Features
 
-*   **Desktop Application (New!)**: A standalone Electron app for Windows & macOS. No Node/Python installation required.
-*   **Web Interface**: A built-in, user-friendly Web UI for visual template selection, style editing, and file conversion.
+*   **Desktop Application (New!)**: A standalone Electron app for Windows & macOS (Intel & Apple Silicon). No Node/Python installation required.
+*   **Web Interface**: A built-in, user-friendly Web UI with **real-time preview**.
 *   **Markdown to Docx**: Robust parsing via `markdown-it` with support for bold, italic, lists, tables, and **inline code (`code`)**.
+*   **Import Support**: Import `.docx`, `.md`, or `.txt` files directly into the editor. Docx import automatically cleans up images to prevent performance issues.
+*   **Real-time Preview**: 
+    *   **Dual-pane Layout**: Edit settings on the left, preview on the right.
+    *   **WYSIWYG**: Previews fonts, margins, and table styles instantly using `docx-preview`.
+    *   **Local Font Support**: Ships with open-source fonts (Source Han Sans/Serif, Fandol) to accurately simulate Chinese fonts like "SimSun", "FangSong", and "SimHei" without requiring system installation.
 *   **Official Government Style**: Built-in `gov_official_red` template that enforces strict formatting:
-    *   **Red Header (红头)**: "FangSong" and "FZXiaoBiaoSong" fonts.
+    *   **Red Header (红头)**: "FangSong" and "FZXiaoBiaoSong" fonts (simulated via Fandol fonts in preview).
     *   **Strict Margins**: Standard 3.7cm/3.5cm margins.
     *   **Solid Borders**: Tables are automatically rendered with solid black borders.
-*   **Interactive Mode**: If no template is specified, a user-friendly menu helps you choose the right style.
 *   **Hybrid Style Extraction**:
     *   Uses a Python helper script (`style_extractor.py`) to parse an existing `.docx` file (Reference Doc).
     *   Extracts fonts (including complex Chinese fonts), sizes, and margins to override template defaults.
@@ -129,16 +133,17 @@ This tool uses a **Hybrid Node.js + Python** architecture to achieve high-fideli
 | **Web/CLI** | **Node.js** | `express`, `yargs` | Application entry, server, and argument parsing. |
 | **Doc Generator** | **Node.js** | `markdown-it`, `docx` | Parses Markdown AST and programmatically builds `.docx` files. |
 | **Doc Importer** | **Node.js** | `mammoth`, `turndown` | Converts uploaded Word docs to HTML, then to Markdown for editing. |
+| **Preview** | **JS/CSS** | `docx-preview`, `OTF Fonts` | Renders Docx blob in browser with local font simulation. |
 | **Style Engine** | **Python** | `python-docx` | Parses `.docx` binaries to extract visual styles (fonts, margins, sizes). |
 
 ### 2. Processing Flow / 处理流程
 
 #### A. Import Flow (Word → Markdown)
-1.  **Upload**: User uploads a `.docx` file via the Web UI.
+1.  **Upload**: User uploads a `.docx` file via the Web/App UI.
 2.  **Conversion**:
-    *   **Content**: Server uses `mammoth.js` to convert the Docx content to HTML, then `turndown` converts it to Markdown.
-    *   **Styles**: Server calls the Python script (`style_extractor.py`) to analyze the Docx and extract fonts, margins, and table styles into a JSON object.
-3.  **Result**: The user gets editable Markdown in the editor, and the "Reference Doc" is automatically set to preserve the original styles.
+    *   **Clean**: `mammoth.js` converts content to HTML (ignoring images to prevent bloat).
+    *   **Parse**: `turndown` converts HTML to Markdown.
+3.  **Result**: The user gets editable Markdown in the editor.
 
 #### B. Export Flow (Markdown → Docx)
 1.  **Input**: User submits Markdown content + a Template Name (or Reference Doc).
@@ -154,14 +159,17 @@ This tool uses a **Hybrid Node.js + Python** architecture to achieve high-fideli
 
 ### ✨ 核心特性
 
-*   **桌面客户端 (新增!)**：支持 Windows 和 macOS 的独立 Electron 应用。无需安装 Node/Python 环境，双击即用。
-*   **Web 可视化界面**：内置好用的 Web UI，支持可视化选择模板、微调样式和文件转换。
+*   **桌面客户端 (新增!)**：支持 Windows 和 macOS (Intel & M1/M2) 的独立 Electron 应用。无需安装 Node/Python 环境，双击即用。
+*   **Web 可视化界面**：内置好用的 Web UI，支持实时预览和文件转换。
 *   **Markdown 转 Docx**：基于 `markdown-it` 的稳定解析，完美支持表格加粗、斜体等内联样式，以及**行内代码 (`code`)**。
+*   **全能导入**：支持导入 `.docx`, `.md`, `.txt` 文件。Docx 导入时自动过滤图片以优化性能。
+*   **实时所见即所得 (WYSIWYG)**：
+    *   **双栏布局**：左侧调整配置，右侧实时预览效果。
+    *   **本地字体模拟**：内置高质量开源字体（思源黑体/宋体、Fandol 仿宋/小标宋），**无需系统安装**即可精确预览“仿宋”、“黑体”、“小标宋”等公文特殊字体。
 *   **党政机关公文标准**：内置 `gov_official_red` (红头公文) 模板，严格遵循国家公文格式标准：
     *   **红头文件**：自动应用方正小标宋（红头）、仿宋（正文）、黑体/楷体（标题）。
     *   **版面设置**：严格的 上3.7cm / 下3.5cm / 左2.8cm / 右2.6cm 页边距。
     *   **公文表格**：自动将 Markdown 表格渲染为全黑色实线边框（解决 Pandoc 表格样式不可控问题）。
-*   **交互式选择**：如果不指定模板参数，工具会自动弹出中文菜单供您选择。
 *   **混合样式提取 (Node.js + Python)**：
     *   利用 Python 脚本 (`style_extractor.py`) 解析现有的 `.docx` 参考文档。
     *   智能提取正文字体（如“宋体”）、字号和页边距，并覆盖预设模板。

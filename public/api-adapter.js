@@ -58,5 +58,20 @@ const API = {
         }
         return await res.blob();
       }
+    },
+
+    async preview(styleConfig, markdown) {
+      if (this.isElectron()) {
+        const buffer = await window.electronAPI.previewTemplateDynamic(styleConfig, markdown);
+        return new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+      } else {
+        const res = await fetch('/api/preview/dynamic', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ styleConfig, markdown })
+        });
+        if (!res.ok) throw new Error('Preview failed');
+        return await res.blob();
+      }
     }
   };

@@ -6,6 +6,7 @@ const mammoth = require('mammoth');
 const TurndownService = require('turndown');
 const { gfm } = require('turndown-plugin-gfm');
 const { generateDocx } = require('../lib/core');
+const { generatePreviewBuffer } = require('../lib/sample-generator');
 const templateManager = require('../lib/template-manager');
 const { extractStyles } = require('../lib/python-bridge');
 
@@ -98,13 +99,28 @@ ipcMain.handle('import-docx', async (event, fileBuffer) => {
     try {
         // Buffer comes as Uint8Array from renderer
         const buffer = Buffer.from(fileBuffer);
-        const { value: html } = await mammoth.convertToHtml({ buffer });
+        
+        // Optimize: Ignore images to avoid long base64 strings
+        const options = {
+            ignoreImage: true 
+        };
+        
+        const { value: html } = await mammoth.convertToHtml({ buffer }, options);
         
         const turndownService = new TurndownService({
             headingStyle: 'atx',
             codeBlockStyle: 'fenced'
         });
         turndownService.use(gfm);
+
+        // Explicitly discard images in Turndown to prevent base64 leaks or placeholders
+        turndownService.addRule('removeImages', {
+            filter: 'img',
+            replacement: function (content, node) {
+                // Return empty string to hide, or '[图片]' to show placeholder
+                return '[图片]'; 
+            }
+        });
         
         const markdown = turndownService.turndown(html);
         return { markdown };
@@ -167,5 +183,16 @@ ipcMain.handle('convert', async (event, { markdown, templateName, styleConfig, r
         if (tempDocPath) {
             fs.promises.unlink(tempDocPath).catch(() => {});
         }
+    }
+});
+
+// 4. Preview (Dynamic)
+ipcMain.handle('preview-template-dynamic', async (event, { styleConfig, markdown }) => {
+    try {
+        const buffer = await generatePreviewBuffer(styleConfig || {}, markdown);
+        return buffer;
+    } catch (error) {
+        console.error('Preview error:', error);
+        throw new Error(error.message);
     }
 });
