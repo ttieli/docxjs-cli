@@ -2,7 +2,7 @@
 
 [中文说明](#中文说明) | [English](#english)
 
-**Current Version / 当前版本**: `1.3.0`
+**Current Version / 当前版本**: `1.3.1`
 
 A powerful, **hybrid tool (CLI & Desktop)** that converts Markdown to high-fidelity Word (.docx) documents. It combines the generation capabilities of Node.js with the style parsing capabilities of Python, specifically optimized for **Chinese Official Document formats (党政机关公文格式)** and standard business reports.
 
@@ -24,6 +24,7 @@ A powerful, **hybrid tool (CLI & Desktop)** that converts Markdown to high-fidel
     *   **Bilingual Templates**: Built-in templates with clear bilingual names (e.g., "Official Red", "Business Contract").
 *   **Official Government Style**: Strict adherence to Chinese "Red Header" document standards (fonts, margins, solid borders).
 *   **Hybrid Style Extraction**: Can extract styles (margins, fonts) from an existing `.docx` file to apply to your new document.
+*   **Smart CLI Defaults**: If no output path is specified, the CLI automatically generates a file in the input directory with the format `{filename}_{timestamp}.docx`.
 
 ### 🖥️ Desktop Application
 
@@ -102,6 +103,7 @@ Templates are defined in `templates/templates.json`. You can now customize:
     *   **双语模板**：内置清晰的中英双语模板名称（如“政府公文 (红头)”、“商务合同”）。
 *   **党政机关公文标准**：严格遵循国家公文格式标准（红头、仿宋/小标宋字体模拟、标准页边距、实线表格）。
 *   **样式提取**：支持从现有的 Word 文档中“吸取”页边距和字体样式。
+*   **智能命令行默认值**：如果未指定输出路径，CLI 会自动在输入文件同目录下生成格式为 `{原文件名}_{时间戳}.docx` 的文件。
 
 ### 🖥️ 下载与安装
 
@@ -145,6 +147,8 @@ npm install -g docxjs-cli
 
 # 基础转换
 docxjs input.md -o output.docx
+# 或者仅指定输入文件（自动生成输出名）：
+docxjs input.md
 ```
 
 ### 🚀 使用指南 (桌面版/Web)

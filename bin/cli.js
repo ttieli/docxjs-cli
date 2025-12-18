@@ -49,7 +49,7 @@ function loadTemplates(customConfigPath) {
     const argv = yargs(hideBin(process.argv))
         .usage('Usage: $0 <input.md> -o <output.docx> [options]')
         .command('$0 <input>', 'Convert Markdown to Docx')
-        .option('output', { alias: 'o', type: 'string', default: 'output.docx' })
+        .option('output', { alias: 'o', type: 'string' })
         .option('template', { alias: 't', type: 'string', description: `Template name.` })
         .option('config', { alias: 'c', type: 'string' })
         .option('reference-doc', { alias: 'r', type: 'string' })
@@ -58,7 +58,20 @@ function loadTemplates(customConfigPath) {
         .argv;
 
     const inputPath = argv.input;
-    const outputPath = argv.output;
+    let outputPath = argv.output;
+
+    if (!outputPath) {
+        const absInputPath = path.resolve(inputPath);
+        const dirname = path.dirname(absInputPath);
+        const ext = path.extname(absInputPath);
+        const basename = path.basename(absInputPath, ext);
+        
+        const now = new Date();
+        const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}-${String(now.getSeconds()).padStart(2, '0')}`;
+        
+        outputPath = path.join(dirname, `${basename}_${timestamp}.docx`);
+    }
+
     let templateName = argv.template;
     const referenceDocPath = argv['reference-doc'];
 
