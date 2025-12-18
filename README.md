@@ -2,7 +2,7 @@
 
 [中文说明](#中文说明) | [English](#english)
 
-**Current Version / 当前版本**: `1.3.1`
+**Current Version / 当前版本**: `1.3.2`
 
 A powerful, **hybrid tool (CLI & Desktop)** that converts Markdown to high-fidelity Word (.docx) documents. It combines the generation capabilities of Node.js with the style parsing capabilities of Python, specifically optimized for **Chinese Official Document formats (党政机关公文格式)** and standard business reports.
 
@@ -25,6 +25,7 @@ A powerful, **hybrid tool (CLI & Desktop)** that converts Markdown to high-fidel
 *   **Official Government Style**: Strict adherence to Chinese "Red Header" document standards (fonts, margins, solid borders).
 *   **Hybrid Style Extraction**: Can extract styles (margins, fonts) from an existing `.docx` file to apply to your new document.
 *   **Smart CLI Defaults**: If no output path is specified, the CLI automatically generates a file in the input directory with the format `{filename}_{timestamp}.docx`.
+*   **Enhanced Layout Control**: Templates now support explicit `titleAlignment` (e.g., center) and `paragraphIndent` (e.g., first-line indent).
 
 ### 🖥️ Desktop Application
 
@@ -86,6 +87,8 @@ Templates are defined in `templates/templates.json`. You can now customize:
 *   **Margins**: Precise control (in twips).
 *   **Tables**: Border styles (single/dotted), width, and colors.
 *   **Line Spacing**: In twips (e.g., 560 = 28pt).
+*   **Title Alignment**: `titleAlignment`: "center" | "left" | "right" (For H1).
+*   **Paragraph Indent**: `paragraphIndent`: Number (in twips, e.g., 640 for 2 chars).
 
 ---
 
@@ -104,6 +107,7 @@ Templates are defined in `templates/templates.json`. You can now customize:
 *   **党政机关公文标准**：严格遵循国家公文格式标准（红头、仿宋/小标宋字体模拟、标准页边距、实线表格）。
 *   **样式提取**：支持从现有的 Word 文档中“吸取”页边距和字体样式。
 *   **智能命令行默认值**：如果未指定输出路径，CLI 会自动在输入文件同目录下生成格式为 `{原文件名}_{时间戳}.docx` 的文件。
+*   **增强版式控制**：模板现支持显式配置 `titleAlignment`（标题对齐）和 `paragraphIndent`（段落首行缩进）。
 
 ### 🖥️ 下载与安装
 
@@ -167,6 +171,8 @@ docxjs input.md
 *   **页边距**：精确控制上下左右边距 (单位: twips)。
 *   **表格样式**：支持设置边框类型（实线/虚线）、粗细及表头样式。
 *   **行间距**：固定值行距 (单位: twips, 1磅=20 twips)。
+*   **标题对齐**：`titleAlignment`: "center" | "left" | "right" (仅限 H1)。
+*   **段落缩进**：`paragraphIndent`: 数值 (单位 twips, 如 640 约等于两个汉字)。
 
 ---
 
