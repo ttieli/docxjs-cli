@@ -1,6 +1,6 @@
 {
   "name": "docxjs-cli",
-  "version": "1.2.0-beta.6",
+  "version": "1.2.0-beta.7",
   "main": "electron/main.js",
   "description": "Markdown to Docx converter with Chinese Official Document Style support",
   "bin": {
