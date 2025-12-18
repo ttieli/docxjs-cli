@@ -2,7 +2,7 @@
 
 [中文说明](#中文说明) | [English](#english)
 
-**Current Version / 当前版本**: `1.3.2`
+**Current Version / 当前版本**: `1.3.3`
 
 A powerful, **hybrid tool (CLI & Desktop)** that converts Markdown to high-fidelity Word (.docx) documents. It combines the generation capabilities of Node.js with the style parsing capabilities of Python, specifically optimized for **Chinese Official Document formats (党政机关公文格式)** and standard business reports.
 
@@ -26,6 +26,7 @@ A powerful, **hybrid tool (CLI & Desktop)** that converts Markdown to high-fidel
 *   **Hybrid Style Extraction**: Can extract styles (margins, fonts) from an existing `.docx` file to apply to your new document.
 *   **Smart CLI Defaults**: If no output path is specified, the CLI automatically generates a file in the input directory with the format `{filename}_{timestamp}.docx`.
 *   **Enhanced Layout Control**: Templates now support explicit `titleAlignment` (e.g., center) and `paragraphIndent` (e.g., first-line indent).
+*   **Intuitive Font Sizes**: Editor inputs now use **Points (pt)** standard. Built-in mapping displays the corresponding Chinese font size name (e.g., "小四" for 12pt).
 
 ### 🖥️ Desktop Application
 
@@ -83,7 +84,7 @@ docxjs input.md -o output.docx
 ### ⚙️ Template Configuration
 
 Templates are defined in `templates/templates.json`. You can now customize:
-*   **Fonts/Sizes/Colors**: For Body text and Headings H1-H6.
+*   **Fonts/Sizes/Colors**: For Body text and Headings H1-H6. Note: CLI JSON config uses **Half-points** for font sizes (e.g., 24 = 12pt).
 *   **Margins**: Precise control (in twips).
 *   **Tables**: Border styles (single/dotted), width, and colors.
 *   **Line Spacing**: In twips (e.g., 560 = 28pt).
@@ -108,6 +109,7 @@ Templates are defined in `templates/templates.json`. You can now customize:
 *   **样式提取**：支持从现有的 Word 文档中“吸取”页边距和字体样式。
 *   **智能命令行默认值**：如果未指定输出路径，CLI 会自动在输入文件同目录下生成格式为 `{原文件名}_{时间戳}.docx` 的文件。
 *   **增强版式控制**：模板现支持显式配置 `titleAlignment`（标题对齐）和 `paragraphIndent`（段落首行缩进）。
+*   **直观字号映射**：编辑器输入框统一采用 **磅 (pt)** 为单位，并自动显示对应的中文字号（如输入 12 显示“小四”），解决了之前的单位换算困扰。
 
 ### 🖥️ 下载与安装
 
@@ -167,7 +169,7 @@ docxjs input.md
 ### ⚙️ 模板配置说明
 
 所有预设模板均位于 `templates/templates.json`。支持的配置项包括：
-*   **字体/字号/颜色**：覆盖正文及 H1-H6 所有层级。
+*   **字体/字号/颜色**：覆盖正文及 H1-H6 所有层级。注意：CLI 的 JSON 配置文件中，字号单位为 **半磅 (Half-points)** (例如 24 代表 12pt)。桌面端编辑器会自动处理此换算。
 *   **页边距**：精确控制上下左右边距 (单位: twips)。
 *   **表格样式**：支持设置边框类型（实线/虚线）、粗细及表头样式。
 *   **行间距**：固定值行距 (单位: twips, 1磅=20 twips)。

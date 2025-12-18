@@ -354,15 +354,26 @@
                   <input type="text" id="fontHeader1">
                 </div>
                 <div>
-                  <label>字号 (Half-pt)</label>
+                  <label>字号 (pt) <span id="chineseFontSizeH1" class="chinese-font-size"></span></label>
                   <input type="number" id="fontSizeH1">
                 </div>
               </div>
-              <div style="margin-top:8px;">
-                <label>颜色</label>
-                <div class="color-wrapper">
-                  <input type="color" id="colorHeader1">
-                  <input type="text" id="colorHeader1Text" placeholder="#000000">
+              <div class="grid-2" style="margin-top:8px;">
+                <div>
+                    <label>颜色</label>
+                    <div class="color-wrapper">
+                      <input type="color" id="colorHeader1">
+                      <input type="text" id="colorHeader1Text" placeholder="#000000">
+                    </div>
+                </div>
+                <div>
+                    <label>对齐方式</label>
+                    <select id="titleAlignment">
+                        <option value="">默认</option>
+                        <option value="left">左对齐</option>
+                        <option value="center">居中</option>
+                        <option value="right">右对齐</option>
+                    </select>
                 </div>
               </div>
             </div>
@@ -375,7 +386,7 @@
                   <input type="text" id="fontHeader2">
                 </div>
                 <div>
-                  <label>字号 (Half-pt)</label>
+                  <label>字号 (pt) <span id="chineseFontSizeH2" class="chinese-font-size"></span></label>
                   <input type="number" id="fontSizeH2">
                 </div>
               </div>
@@ -396,7 +407,7 @@
                   <input type="text" id="fontHeader3">
                 </div>
                 <div>
-                  <label>字号 (Half-pt)</label>
+                  <label>字号 (pt) <span id="chineseFontSizeH3" class="chinese-font-size"></span></label>
                   <input type="number" id="fontSizeH3">
                 </div>
               </div>
@@ -417,7 +428,7 @@
                   <input type="text" id="fontHeader4">
                 </div>
                 <div>
-                  <label>字号 (Half-pt)</label>
+                  <label>字号 (pt) <span id="chineseFontSizeH4" class="chinese-font-size"></span></label>
                   <input type="number" id="fontSizeH4">
                 </div>
               </div>
@@ -438,7 +449,7 @@
                   <input type="text" id="fontHeader5">
                 </div>
                 <div>
-                  <label>字号 (Half-pt)</label>
+                  <label>字号 (pt) <span id="chineseFontSizeH5" class="chinese-font-size"></span></label>
                   <input type="number" id="fontSizeH5">
                 </div>
               </div>
@@ -459,7 +470,7 @@
                   <input type="text" id="fontHeader6">
                 </div>
                 <div>
-                  <label>字号 (Half-pt)</label>
+                  <label>字号 (pt) <span id="chineseFontSizeH6" class="chinese-font-size"></span></label>
                   <input type="number" id="fontSizeH6">
                 </div>
               </div>
@@ -484,13 +495,19 @@
                 <input type="text" id="fontMain">
               </div>
               <div>
-                <label>字号</label>
+                <label>字号 <span id="chineseFontSizeMain" class="chinese-font-size"></span></label>
                 <input type="number" id="fontSizeMain">
               </div>
             </div>
-            <div style="margin-top:8px;">
-               <label>行距 (Line Spacing)</label>
-               <input type="number" id="lineSpacing">
+            <div class="grid-2" style="margin-top:8px;">
+               <div>
+                   <label>行距 (Line Spacing)</label>
+                   <input type="number" id="lineSpacing">
+               </div>
+               <div>
+                   <label>首行缩进 (twips)</label>
+                   <input type="number" id="paragraphIndent" placeholder="如: 640">
+               </div>
             </div>
           </div>
         </details>
@@ -578,6 +595,29 @@
 
   <script src="api-adapter.js"></script>
   <script>
+    // --- Chinese Font Size Mapping ---
+    const ptToChineseMap = {
+      42: "初号",
+      36: "小初",
+      26: "一号",
+      24: "小一",
+      22: "二号",
+      18: "小二",
+      16: "三号",
+      15: "小三",
+      14: "四号",
+      12: "小四",
+      10.5: "五号",
+      9: "小五",
+      7.5: "六号",
+      6.5: "小六"
+    };
+
+    function getChineseFontSize(pt) {
+      const val = parseFloat(pt);
+      return ptToChineseMap[val] ? `(${ptToChineseMap[val]})` : '';
+    }
+
     // --- State ---
     let templatesCache = {};
     let currentStyleConfig = {};
@@ -670,7 +710,9 @@ Here is a demonstration of table styling:
         
         // Trigger initial load
         if (templates.length > 0) {
-            applyValuesFromConfig(templatesCache[templates[0].id]);
+            const initialId = templates[0].id;
+            currentStyleConfig = JSON.parse(JSON.stringify(templatesCache[initialId])); // Deep copy
+            applyValuesFromConfig(currentStyleConfig);
             triggerPreview();
         }
       } catch (e) {
@@ -685,38 +727,46 @@ Here is a demonstration of table styling:
       const getVal = (id) => document.getElementById(id).value;
       const getNum = (id) => Number(document.getElementById(id).value) || undefined;
       const getCol = (id) => document.getElementById(id).value; // Hex
+      
+      // Helper: Convert UI PT to Backend Half-PT
+      const getHalfPt = (id) => {
+          const val = getNum(id);
+          return val !== undefined ? val * 2 : undefined;
+      };
 
       // Start with current config to preserve hidden fields (from JSON edits)
       const base = JSON.parse(JSON.stringify(currentStyleConfig || {}));
 
       const uiConfig = {
         fontHeader1: getVal('fontHeader1') || undefined,
-        fontSizeH1: getNum('fontSizeH1'),
+        fontSizeH1: getHalfPt('fontSizeH1'),
         colorHeader1: inputToHex(getCol('colorHeader1')),
+        titleAlignment: getVal('titleAlignment') || undefined,
 
         fontHeader2: getVal('fontHeader2') || undefined,
-        fontSizeH2: getNum('fontSizeH2'),
+        fontSizeH2: getHalfPt('fontSizeH2'),
         colorHeader2: inputToHex(getCol('colorHeader2')),
 
         fontHeader3: getVal('fontHeader3') || undefined,
-        fontSizeH3: getNum('fontSizeH3'),
+        fontSizeH3: getHalfPt('fontSizeH3'),
         colorHeader3: inputToHex(getCol('colorHeader3')),
 
         fontHeader4: getVal('fontHeader4') || undefined,
-        fontSizeH4: getNum('fontSizeH4'),
+        fontSizeH4: getHalfPt('fontSizeH4'),
         colorHeader4: inputToHex(getCol('colorHeader4')),
 
         fontHeader5: getVal('fontHeader5') || undefined,
-        fontSizeH5: getNum('fontSizeH5'),
+        fontSizeH5: getHalfPt('fontSizeH5'),
         colorHeader5: inputToHex(getCol('colorHeader5')),
 
         fontHeader6: getVal('fontHeader6') || undefined,
-        fontSizeH6: getNum('fontSizeH6'),
+        fontSizeH6: getHalfPt('fontSizeH6'),
         colorHeader6: inputToHex(getCol('colorHeader6')),
 
         fontMain: getVal('fontMain') || undefined,
-        fontSizeMain: getNum('fontSizeMain'),
+        fontSizeMain: getHalfPt('fontSizeMain'),
         lineSpacing: getNum('lineSpacing'),
+        paragraphIndent: getNum('paragraphIndent'),
         
         margin: {
           ...(base.margin || {}), // preserve other margin props if any
@@ -779,33 +829,45 @@ Here is a demonstration of table styling:
         if(el) el.value = (v === undefined ? '' : v); 
       };
       
+      // Helper: Convert Backend Half-PT to UI PT
+      const setPt = (id, halfPtVal, displayId) => {
+          const ptVal = halfPtVal ? halfPtVal / 2 : undefined;
+          setVal(id, ptVal);
+          const displayEl = document.getElementById(displayId);
+          if (displayEl) {
+              displayEl.textContent = ptVal ? getChineseFontSize(ptVal) : '';
+          }
+      };
+      
       setVal('fontHeader1', style.fontHeader1);
-      setVal('fontSizeH1', style.fontSizeH1);
+      setPt('fontSizeH1', style.fontSizeH1, 'chineseFontSizeH1');
       setVal('colorHeader1', hexToInput(style.colorHeader1));
+      setVal('titleAlignment', style.titleAlignment);
 
       setVal('fontHeader2', style.fontHeader2);
-      setVal('fontSizeH2', style.fontSizeH2);
+      setPt('fontSizeH2', style.fontSizeH2, 'chineseFontSizeH2');
       setVal('colorHeader2', hexToInput(style.colorHeader2));
 
       setVal('fontHeader3', style.fontHeader3);
-      setVal('fontSizeH3', style.fontSizeH3);
+      setPt('fontSizeH3', style.fontSizeH3, 'chineseFontSizeH3');
       setVal('colorHeader3', hexToInput(style.colorHeader3));
 
       setVal('fontHeader4', style.fontHeader4);
-      setVal('fontSizeH4', style.fontSizeH4);
+      setPt('fontSizeH4', style.fontSizeH4, 'chineseFontSizeH4');
       setVal('colorHeader4', hexToInput(style.colorHeader4));
 
       setVal('fontHeader5', style.fontHeader5);
-      setVal('fontSizeH5', style.fontSizeH5);
+      setPt('fontSizeH5', style.fontSizeH5, 'chineseFontSizeH5');
       setVal('colorHeader5', hexToInput(style.colorHeader5));
 
       setVal('fontHeader6', style.fontHeader6);
-      setVal('fontSizeH6', style.fontSizeH6);
+      setPt('fontSizeH6', style.fontSizeH6, 'chineseFontSizeH6');
       setVal('colorHeader6', hexToInput(style.colorHeader6));
 
       setVal('fontMain', style.fontMain);
-      setVal('fontSizeMain', style.fontSizeMain);
+      setPt('fontSizeMain', style.fontSizeMain, 'chineseFontSizeMain');
       setVal('lineSpacing', style.lineSpacing);
+      setVal('paragraphIndent', style.paragraphIndent);
 
       if(style.margin) {
         setVal('marginTop', style.margin.top);
@@ -865,18 +927,42 @@ Here is a demonstration of table styling:
 
     // --- Event Listeners ---
     
-    // 1. All inputs trigger preview
+    // 1. All inputs trigger preview (and update chinese font size display)
     document.querySelectorAll('input, select').forEach(el => {
       if(el.id === 'templateSelect' || el.id === 'refDocInput' || el.type === 'file') return;
-      el.addEventListener('input', triggerPreview);
+      el.addEventListener('input', () => {
+        // Update Chinese font size display for relevant inputs
+        if (el.id.startsWith('fontSizeH') || el.id === 'fontSizeMain') {
+            const chineseDisplayId = 'chinese' + el.id.charAt(0).toUpperCase() + el.id.slice(1);
+            const chineseDisplayEl = document.getElementById(chineseDisplayId);
+            if (chineseDisplayEl) {
+                chineseDisplayEl.textContent = getChineseFontSize(el.value);
+            }
+        }
+        triggerPreview();
+      });
       el.addEventListener('change', triggerPreview);
+    });
+
+    // Initialize Chinese font size display for all font size inputs
+    const fontSizeInputs = [
+        'fontSizeH1', 'fontSizeH2', 'fontSizeH3', 'fontSizeH4', 'fontSizeH5', 'fontSizeH6', 'fontSizeMain'
+    ];
+    fontSizeInputs.forEach(id => {
+        const input = document.getElementById(id);
+        const chineseDisplayId = 'chinese' + id.charAt(0).toUpperCase() + id.slice(1);
+        const chineseDisplayEl = document.getElementById(chineseDisplayId);
+        if (input && chineseDisplayEl) {
+            chineseDisplayEl.textContent = getChineseFontSize(input.value);
+        }
     });
 
     // 2. Template Change
     els.templateSelect.addEventListener('change', (e) => {
         const tId = e.target.value;
         if(templatesCache[tId]) {
-            applyValuesFromConfig(templatesCache[tId]);
+            currentStyleConfig = JSON.parse(JSON.stringify(templatesCache[tId])); // Deep copy
+            applyValuesFromConfig(currentStyleConfig);
             triggerPreview();
         }
     });
