@@ -6,9 +6,10 @@
   <title>DocxJS Pro Editor</title>
   <script src="vendor/jszip/jszip.min.js"></script>
   <script src="vendor/docx-preview/docx-preview.min.js"></script>
+  <script src="vendor/html2canvas/html2canvas.min.js"></script>
+  <script src="vendor/jspdf/jspdf.umd.min.js"></script>
   <link rel="stylesheet" href="fonts.css">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
     
     :root {
       /* Theme Variables */
@@ -38,6 +39,19 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
+    }
+    
+    /* Print Styles */
+    @media print {
+      body * { visibility: hidden; }
+      #paper-container, #paper-container * { visibility: visible; }
+      #paper-container { position: absolute; left: 0; top: 0; margin: 0; padding: 0; transform: none !important; }
+      header, aside, .preview-toolbar { display: none !important; }
+      .app-body { height: auto; overflow: visible; }
+      main.preview-stage { background: white; overflow: visible; padding: 0; }
+      .canvas-scroll { padding: 0; overflow: visible; display: block; }
+      /* Ensure pages break correctly */
+      .docx-wrapper > section.docx { page-break-after: always; box-shadow: none !important; margin: 0 !important; }
     }
 
     /* Header */
@@ -297,6 +311,8 @@
         <input id="headerFileInput" type="file" accept=".md,.txt,.docx" style="display:none;">
       </label>
       <button class="btn" id="editMdBtn">📝 编辑内容</button>
+      <button class="btn" id="exportImgBtn">🖼 导出长图</button>
+      <button class="btn" id="exportPdfBtn">📄 导出 PDF</button>
       <button class="btn btn-primary" id="downloadBtn">⬇ 导出 Docx</button>
     </div>
   </header>
@@ -1067,6 +1083,61 @@ Here is a demonstration of table styling:
         els.editorContainer.style.display = 'none';
         els.previewContainer.style.display = 'flex';
     });
+
+    // 8. Export PDF
+    const exportPdfBtn = document.getElementById('exportPdfBtn');
+    if (exportPdfBtn) {
+        exportPdfBtn.addEventListener('click', async () => {
+            if (API.isElectron()) {
+                // Electron Native Print
+                els.status.textContent = "Exporting PDF...";
+                try {
+                    const success = await window.electronAPI.printToPDF();
+                    if(success) els.status.textContent = "PDF Exported";
+                    else els.status.textContent = "PDF Cancelled";
+                } catch (e) {
+                    console.error(e);
+                    alert("PDF Export Failed: " + e.message);
+                    els.status.textContent = "Error";
+                }
+            } else {
+                // Web: Browser Print
+                window.print();
+            }
+        });
+    }
+
+    // 9. Export Image (Long Image)
+    const exportImgBtn = document.getElementById('exportImgBtn');
+    if (exportImgBtn) {
+        exportImgBtn.addEventListener('click', async () => {
+            els.status.textContent = "Generating Image...";
+            try {
+                // Target the wrapper created by docx-preview
+                const element = document.querySelector('.docx-wrapper') || document.getElementById('paper-container');
+                if(!element) throw new Error("Preview content not found");
+
+                const canvas = await html2canvas(element, { 
+                    scale: 2, // High resolution
+                    backgroundColor: '#ffffff', // Ensure white background
+                    useCORS: true 
+                });
+                
+                // Download
+                const link = document.createElement('a');
+                link.download = `export_${Date.now()}.png`;
+                link.href = canvas.toDataURL("image/png");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                els.status.textContent = "Image Exported";
+            } catch (e) {
+                console.error(e);
+                alert("Image Export Failed: " + e.message);
+                els.status.textContent = "Error";
+            }
+        });
+    }
 
     // Start
     init();

@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
 const inquirer = require('inquirer');
@@ -53,6 +54,7 @@ function loadTemplates(customConfigPath) {
         .option('template', { alias: 't', type: 'string', description: `Template name.` })
         .option('config', { alias: 'c', type: 'string' })
         .option('reference-doc', { alias: 'r', type: 'string' })
+        .option('pdf', { type: 'boolean', description: 'Export as PDF using LibreOffice (soffice)' })
         .demandCommand(1)
         .help()
         .argv;
@@ -130,6 +132,18 @@ function loadTemplates(customConfigPath) {
         const buffer = await generateDocx(mdContent, currentStyle, baseDir);
         fs.writeFileSync(outputPath, buffer);
         console.log(`✅ Success! Created ${outputPath}`);
+
+        if (argv.pdf) {
+            console.log('📄 Converting to PDF (requires LibreOffice)...');
+            const outputDir = path.dirname(outputPath);
+            try {
+                execSync(`soffice --headless --convert-to pdf "${outputPath}" --outdir "${outputDir}"`, { stdio: 'pipe' });
+                console.log(`✅ PDF created: ${outputPath.replace('.docx', '.pdf')}`);
+            } catch (e) {
+                console.error(`❌ PDF conversion failed. Please ensure LibreOffice (soffice) is installed and in your PATH.`);
+            }
+        }
+
     } catch (e) {
         console.error(`❌ Conversion failed: ${e.message}`);
         process.exit(1);
