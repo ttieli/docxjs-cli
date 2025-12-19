@@ -186,13 +186,32 @@ ipcMain.handle('convert', async (event, { markdown, templateName, styleConfig, r
     }
 });
 
-// 4. Preview (Dynamic)
-ipcMain.handle('preview-template-dynamic', async (event, { styleConfig, markdown }) => {
+// 5. Print to PDF
+ipcMain.handle('print-to-pdf', async (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (!win) return false;
+
     try {
-        const buffer = await generatePreviewBuffer(styleConfig || {}, markdown);
-        return buffer;
+        const data = await win.webContents.printToPDF({
+            printBackground: true,
+            pageSize: 'A4',
+            marginsType: 0 // No margins, let the content handle it
+        });
+        
+        const { filePath } = await dialog.showSaveDialog(win, {
+            title: 'Export PDF',
+            defaultPath: 'document.pdf',
+            filters: [{ name: 'PDF Files', extensions: ['pdf'] }]
+        });
+
+        if (filePath) {
+            await fs.promises.writeFile(filePath, data);
+            return true;
+        }
+        return false; // User cancelled
     } catch (error) {
-        console.error('Preview error:', error);
+        console.error('PDF export error:', error);
         throw new Error(error.message);
     }
 });
+
