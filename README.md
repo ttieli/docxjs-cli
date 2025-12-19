@@ -2,7 +2,7 @@
 
 [中文说明](#中文说明) | [English](#english)
 
-**Current Version / 当前版本**: `1.3.3`
+**Current Version / 当前版本**: `1.3.4`
 
 A powerful, **hybrid tool (CLI & Desktop)** that converts Markdown to high-fidelity Word (.docx) documents. It combines the generation capabilities of Node.js with the style parsing capabilities of Python, specifically optimized for **Chinese Official Document formats (党政机关公文格式)** and standard business reports.
 
@@ -27,6 +27,7 @@ A powerful, **hybrid tool (CLI & Desktop)** that converts Markdown to high-fidel
 *   **Smart CLI Defaults**: If no output path is specified, the CLI automatically generates a file in the input directory with the format `{filename}_{timestamp}.docx`.
 *   **Enhanced Layout Control**: Templates now support explicit `titleAlignment` (e.g., center) and `paragraphIndent` (e.g., first-line indent).
 *   **Intuitive Font Sizes**: Editor inputs now use **Points (pt)** standard. Built-in mapping displays the corresponding Chinese font size name (e.g., "小四" for 12pt).
+*   **Precise Line Spacing**: Supports `exact` (fixed) vs `auto` (multiple) line spacing rules to ensure perfect rendering across WPS and Word.
 
 ### 🖥️ Desktop Application
 
@@ -87,7 +88,7 @@ Templates are defined in `templates/templates.json`. You can now customize:
 *   **Fonts/Sizes/Colors**: For Body text and Headings H1-H6. Note: CLI JSON config uses **Half-points** for font sizes (e.g., 24 = 12pt).
 *   **Margins**: Precise control (in twips).
 *   **Tables**: Border styles (single/dotted), width, and colors.
-*   **Line Spacing**: In twips (e.g., 560 = 28pt).
+*   **Line Spacing**: In twips (e.g., 560 = 28pt). Use `"lineRule": "exact"` for fixed values (Official Docs) or `"auto"` for multiples (General).
 *   **Title Alignment**: `titleAlignment`: "center" | "left" | "right" (For H1).
 *   **Paragraph Indent**: `paragraphIndent`: Number (in twips, e.g., 640 for 2 chars).
 
@@ -110,6 +111,7 @@ Templates are defined in `templates/templates.json`. You can now customize:
 *   **智能命令行默认值**：如果未指定输出路径，CLI 会自动在输入文件同目录下生成格式为 `{原文件名}_{时间戳}.docx` 的文件。
 *   **增强版式控制**：模板现支持显式配置 `titleAlignment`（标题对齐）和 `paragraphIndent`（段落首行缩进）。
 *   **直观字号映射**：编辑器输入框统一采用 **磅 (pt)** 为单位，并自动显示对应的中文字号（如输入 12 显示“小四”），解决了之前的单位换算困扰。
+*   **精准行距控制**：支持配置 `lineRule` 为 `exact`（固定值）或 `auto`（倍数），完美适配公文对固定行距的严苛要求，解决 WPS/Word 渲染差异。
 
 ### 🖥️ 下载与安装
 
@@ -172,7 +174,7 @@ docxjs input.md
 *   **字体/字号/颜色**：覆盖正文及 H1-H6 所有层级。注意：CLI 的 JSON 配置文件中，字号单位为 **半磅 (Half-points)** (例如 24 代表 12pt)。桌面端编辑器会自动处理此换算。
 *   **页边距**：精确控制上下左右边距 (单位: twips)。
 *   **表格样式**：支持设置边框类型（实线/虚线）、粗细及表头样式。
-*   **行间距**：固定值行距 (单位: twips, 1磅=20 twips)。
+*   **行间距**：固定值行距 (单位: twips, 1磅=20 twips)。设置 `"lineRule": "exact"` 启用固定行距（公文），`"auto"` 为倍数行距（通用）。
 *   **标题对齐**：`titleAlignment`: "center" | "left" | "right" (仅限 H1)。
 *   **段落缩进**：`paragraphIndent`: 数值 (单位 twips, 如 640 约等于两个汉字)。
 
