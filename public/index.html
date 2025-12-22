@@ -330,15 +330,14 @@
     /* HTML Preview container */
     #htmlPreview {
       background: white;
-      width: 794px; /* ~A4 usable width at 96dpi */
+      width: 900px; /* Expanded for document-style layouts */
       min-height: 1123px;
       margin: 0 auto;
-      padding: 40px 48px;
+      padding: 0; /* Let document content handle padding */
       box-shadow: var(--shadow-paper);
       border-radius: 8px;
       color: #111827;
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      line-height: 1.6;
+      overflow: hidden; /* Contain floats and margins */
     }
     #htmlPreview table {
       width: 100%;
@@ -735,76 +734,140 @@
     
         // Initial content
         window.markdownContent = `# 示例文档 (一级标题)
-    
-    这是文档的正文部分。此处展示了**粗体**、*斜体*以及普通文本的行距和字体效果。通过修改左侧的样式配置，您可以实时预览正文的字体、字号、颜色和行间距的变化。
-    
-    ## 二级标题样例
-    二级标题通常用于章节划分。
-    
-    ### 三级标题样例
-    三级标题用于更细致的内容分组。
-    
-    ## 列表与表格展示
-    
-    下面是一个无序列表：
-    - 列表项 1：测试缩进和对齐
-    - 列表项 2：测试字体一致性
-    - 列表项 3：包含 **粗体** 的列表项
-    
-    下面是一个表格样式的展示：
-    
-    | 序号 | 项目名称 | 状态 | 备注 |
-    | :--- | :--- | :--- | :--- |
-    | 1 | 系统架构设计 | 完成 | 核心模块 |
-    | 2 | 前端界面开发 | 进行中 | 样式调整 |
-    | 3 | 后端接口联调 | 待开始 | API 对接 |
-    
-    # Sample Document (Level One Heading)
-    
-    This is the main body of the document. It demonstrates **bold**, *italic*, and regular text with line spacing and font effects. By modifying the style configurations on the left, you can instantly preview changes to the body font, size, color, and line spacing.
-    
-    ## Level Two Heading Example
-    A level two heading is typically used for chapter divisions.
-    
-    ### Level Three Heading Example
-    A level three heading is used for more detailed content grouping.
-    
-    ## Lists and Tables Display
-    
-    Below is an unordered list:
-    - List Item 1: Testing indentation and alignment
-    - List Item 2: Testing font consistency
-    - List Item 3: List item with **bold** text
-    
-    Here is a demonstration of table styling:
-    
-    | No. | Item Name | Status | Remarks |
-    | :--- | :--- | :--- | :--- |
-    | 1 | System Architecture Design | Completed | Core Module |
-    | 2 | Frontend UI Development | In Progress | Style Adjustment |
-    | 3 | Backend API Integration | To Be Started | API Docking |`;
-        window.htmlContent = `<h1>HTML 示例文档 (Sample)</h1>
-    <p>这是一个高质量的 HTML 预览示例，支持 CSS 样式、表格和列表。</p>
-    <div style="background: #f0f7ff; border-left: 4px solid #0070f3; padding: 15px; margin: 20px 0;">
-      <strong>提示：</strong> HTML 导出功能会将此视图完整渲染为长图或 PDF。
-    </div>
-    <h2>数据表格</h2>
-    <table style="width: 100%; border-collapse: collapse;">
-      <tr style="background: #f9fafb;">
-        <th style="border: 1px solid #ddd; padding: 8px;">项目</th>
-        <th style="border: 1px solid #ddd; padding: 8px;">状态</th>
-      </tr>
-      <tr>
-        <td style="border: 1px solid #ddd; padding: 8px;">预览引擎</td>
-        <td style="border: 1px solid #ddd; padding: 8px; color: green;">运行中</td>
-      </tr>
-      <tr>
-        <td style="border: 1px solid #ddd; padding: 8px;">PDF 导出</td>
-        <td style="border: 1px solid #ddd; padding: 8px; color: green;">就绪</td>
-      </tr>
-    </table>
-    <h2>图片展示</h2>
-    <p><img src="https://via.placeholder.com/600x200/2563eb/ffffff?text=HTML+Preview+Success" style="max-width:100%; border-radius:8px;"></p>`;
+
+这是文档的正文部分。此处展示了**粗体**、*斜体*以及普通文本的行距和字体效果。通过修改左侧的样式配置，您可以实时预览正文的字体、字号、颜色和行间距的变化。
+
+## 二级标题样例
+二级标题通常用于章节划分。
+
+### 三级标题样例
+三级标题用于更细致的内容分组。
+
+## 列表与表格展示
+
+下面是一个无序列表：
+- 列表项 1：测试缩进和对齐
+- 列表项 2：测试字体一致性
+- 列表项 3：包含 **粗体** 的列表项
+
+下面是一个表格样式的展示：
+
+| 序号 | 项目名称 | 状态 | 备注 |
+| :--- | :--- | :--- | :--- |
+| 1 | 系统架构设计 | 完成 | 核心模块 |
+| 2 | 前端界面开发 | 进行中 | 样式调整 |
+| 3 | 后端接口联调 | 待开始 | API 对接 |
+
+# Sample Document (Level One Heading)
+
+This is the main body of the document. It demonstrates **bold**, *italic*, and regular text with line spacing and font effects. By modifying the style configurations on the left, you can instantly preview changes to the body font, size, color, and line spacing.
+
+## Level Two Heading Example
+A level two heading is typically used for chapter divisions.
+
+### Level Three Heading Example
+A level three heading is used for more detailed content grouping.
+
+## Lists and Tables Display
+
+Below is an unordered list:
+- List Item 1: Testing indentation and alignment
+- List Item 2: Testing font consistency
+- List Item 3: List item with **bold** text
+
+Here is a demonstration of table styling:
+
+| No. | Item Name | Status | Remarks |
+| :--- | :--- | :--- | :--- |
+| 1 | System Architecture Design | Completed | Core Module |
+| 2 | Frontend UI Development | In Progress | Style Adjustment |
+| 3 | Backend API Integration | To Be Started | API Docking |`;
+        window.htmlContent = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  body { font-family: sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: auto; padding: 20px; }
+  h1 { color: #2563eb; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+  h2 { color: #1e40af; margin-top: 30px; }
+  table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+  th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+  th { background-color: #f8fafc; font-weight: 600; }
+  .highlight { background-color: #fef9c3; padding: 2px 4px; border-radius: 4px; }
+  .info-box { background-color: #eff6ff; border-left: 4px solid #3b82f6; padding: 15px; margin: 20px 0; }
+  img { max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+</style>
+</head>
+<body>
+
+<h1>HTML 预览功能演示 (Sample)</h1>
+
+<p>这是一个用于测试 <strong>DocxJS Pro</strong> HTML 预览与导出功能的样例文件。它包含了常见的网页元素及基础的 CSS 样式支持。</p>
+
+<div class="info-box">
+  <strong>提示：</strong> 您可以直接在编辑器中修改此 HTML 的源码，预览区域将实时更新。
+</div>
+
+<h2>1. 文本样式</h2>
+<p>支持常见的 HTML 标签：</p>
+<ul>
+  <li><strong>加粗文本</strong> (strong)</li>
+  <li><em>斜体文本</em> (em)</li>
+  <li><span class="highlight">带背景色的高亮文本</span> (span with style)</li>
+  <li><a href="#">超链接测试</a></li>
+</ul>
+
+<h2>2. 数据表格</h2>
+<p>支持复杂的表格布局和样式定义：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>项目阶段</th>
+      <th>负责人</th>
+      <th>状态</th>
+      <th>进度</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>需求分析</td>
+      <td>张三</td>
+      <td><span style="color: #059669;">已完成</span></td>
+      <td>100%</td>
+    </tr>
+    <tr>
+      <td>原型设计</td>
+      <td>李四</td>
+      <td><span style="color: #d97706;">进行中</span></td>
+      <td>65%</td>
+    </tr>
+    <tr>
+      <td>核心开发</td>
+      <td>王五</td>
+      <td><span style="color: #dc2626;">待启动</span></td>
+      <td>0%</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>3. 媒体元素</h2>
+<p>支持外链图片展示：</p>
+<p style="text-align: center;">
+  <img src="https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=800&q=80" alt="Office Work">
+  <br>
+  <small style="color: #666;">图 1：远程协作办公场景示意图</small>
+</p>
+
+<h2>4. 列表展示</h2>
+<ol>
+  <li>第一步：导入 HTML 文件或粘贴源码</li>
+  <li>第二步：在预览窗口确认样式</li>
+  <li>第三步：点击“导出长图”或“导出 PDF”</li>
+</ol>
+
+</body>
+</html>`;
     
         // --- Elements ---
         const els = {
@@ -895,9 +958,10 @@
     // --- Logic ---
     function sanitizeHtml(html) {
       if (!html) return '';
-      // Basic sanitizer logic (same as before)
+      // Expanded allowed tags to support full HTML documents and styles
       const allowedTags = new Set([
-        'a','abbr','b','blockquote','br','caption','code','col','colgroup','div','em','figure','figcaption','h1','h2','h3','h4','h5','h6','hr','i','img','label','li','ol','p','pre','section','span','strong','sub','sup','table','tbody','td','tfoot','th','thead','tr','u','ul'
+        'style','body','footer','header','main','aside','article','nav','section',
+        'a','abbr','b','blockquote','br','caption','code','col','colgroup','div','em','figure','figcaption','h1','h2','h3','h4','h5','h6','hr','i','img','label','li','ol','p','pre','span','strong','sub','sup','table','tbody','td','tfoot','th','thead','tr','u','ul'
       ]);
       const globalAttrs = new Set(['class','id','style','title']);
       const attrAllow = {
@@ -906,34 +970,53 @@
       };
       const parser = new DOMParser();
       const doc = parser.parseFromString(html || '', 'text/html');
-      if (!doc || !doc.body) return html || '';
+      if (!doc) return html || '';
 
       const cleanNode = (node) => {
-        if (node.nodeType === Node.ELEMENT_NODE) {
-          const tag = node.tagName.toLowerCase();
-          if (!allowedTags.has(tag)) {
-            node.remove();
+        if (!node || node.nodeType !== Node.ELEMENT_NODE) return;
+        const tag = node.tagName.toLowerCase();
+        
+        // Don't remove html/head containers, but clean their contents
+        if (!allowedTags.has(tag) && tag !== 'html' && tag !== 'head') {
+          node.remove();
+          return;
+        }
+        
+        [...node.attributes].forEach(attr => {
+          const name = attr.name.toLowerCase();
+          const value = attr.value || '';
+          const allowed = (attrAllow[tag] && attrAllow[tag].includes(name)) || globalAttrs.has(name);
+          const isEvent = name.startsWith('on');
+          if (!allowed || isEvent) {
+            node.removeAttribute(attr.name);
             return;
           }
-          [...node.attributes].forEach(attr => {
-            const name = attr.name.toLowerCase();
-            const value = attr.value || '';
-            const allowed = (attrAllow[tag] && attrAllow[tag].includes(name)) || globalAttrs.has(name);
-            const isEvent = name.startsWith('on');
-            if (!allowed || isEvent) {
-              node.removeAttribute(attr.name);
-              return;
-            }
-            if (name === 'href' || name === 'src') {
-              const safe = value.startsWith('https://') || value.startsWith('http://') || value.startsWith('data:') || value.startsWith('#');
-              if (!safe) node.removeAttribute(attr.name);
-            }
-          });
-        }
+          if (name === 'href' || name === 'src') {
+            const safe = value.startsWith('https://') || value.startsWith('http://') || value.startsWith('data:') || value.startsWith('#');
+            if (!safe) node.removeAttribute(attr.name);
+          }
+        });
+        
         [...node.childNodes].forEach(child => cleanNode(child));
       };
-      cleanNode(doc.body);
-      return doc.body.innerHTML;
+      
+      cleanNode(doc.documentElement);
+      
+      // Post-process styles: Scope 'body' selectors to '#htmlPreview'
+      doc.querySelectorAll('style').forEach(s => {
+          s.textContent = s.textContent.replace(/\bbody\b/g, '#htmlPreview');
+      });
+
+      // Assemble output: Wrap body content in a div that preserves body attributes
+      let bodyOutput = '';
+      if (doc.body) {
+          const bodyProxy = document.createElement('div');
+          [...doc.body.attributes].forEach(attr => bodyProxy.setAttribute(attr.name, attr.value));
+          bodyProxy.innerHTML = doc.body.innerHTML;
+          bodyOutput = bodyProxy.outerHTML;
+      }
+
+      return (doc.head ? doc.head.innerHTML : '') + bodyOutput;
     }
 
     function buildConfigFromInputs() {
@@ -1101,9 +1184,9 @@
     function triggerPreview() {
       // Logic split by mode
       if (currentMode === 'html') {
-          els.statusHTML.textContent = "Updating Preview...";
+          if (els.statusHTML) els.statusHTML.textContent = "Updating Preview...";
       } else {
-          els.status.textContent = "Updating Preview...";
+          if (els.status) els.status.textContent = "Updating Preview...";
       }
 
       if (debounceTimer) clearTimeout(debounceTimer);
@@ -1112,14 +1195,18 @@
         try {
           if (currentMode === 'html') {
               const container = els.htmlPreview;
-              if (!container) return;
+              if (!container) {
+                  console.error("HTML Preview Container not found!");
+                  if(els.statusHTML) els.statusHTML.textContent = "Error: HTML Container Missing";
+                  return;
+              }
               try {
                   const safeHtml = sanitizeHtml(window.htmlContent || '');
                   container.innerHTML = safeHtml;
-                  els.statusHTML.textContent = "HTML Preview Updated";
+                  if (els.statusHTML) els.statusHTML.textContent = "HTML Preview Updated";
               } catch (err) {
-                  console.error(err);
-                  els.statusHTML.textContent = "Preview Failed: " + err.message;
+                  console.error("Sanitize/Render Error:", err);
+                  if (els.statusHTML) els.statusHTML.textContent = "Preview Failed: " + err.message;
               }
               return;
           }
@@ -1130,19 +1217,24 @@
           const config = currentStyleConfig;
           const blob = await API.preview(config, window.markdownContent);
           
-          els.paper.innerHTML = '';
-          await docx.renderAsync(blob, els.paper, null, {
-            inWrapper: true,
-            ignoreWidth: false,
-            experimental: true,
-            breakPages: true
-          });
+          if (els.paper) {
+              els.paper.innerHTML = '';
+              await docx.renderAsync(blob, els.paper, null, {
+                inWrapper: true,
+                ignoreWidth: false,
+                experimental: true,
+                breakPages: true
+              });
+          }
           
-          els.status.textContent = "Preview Updated";
+          if (els.status) els.status.textContent = "Preview Updated";
         } catch (err) {
           console.error(err);
-          els.status.textContent = "Preview Failed: " + err.message;
-          if(currentMode === 'html') els.statusHTML.textContent = "Error";
+          if (currentMode === 'html') {
+              if (els.statusHTML) els.statusHTML.textContent = "Error: " + err.message;
+          } else {
+              if (els.status) els.status.textContent = "Preview Failed: " + err.message;
+          }
         }
       }, 600); 
     }
@@ -1279,29 +1371,92 @@
 
     // 6.3 Load Sample HTML
     els.loadSampleHtmlBtn.addEventListener('click', () => {
-        window.htmlContent = `<h1>HTML 预览功能演示 (Sample)</h1>
-<p>这是一个用于测试 <strong>DocxJS Pro</strong> HTML 预览与导出功能的样例文件。</p>
-<div style="background-color: #eff6ff; border-left: 4px solid #3b82f6; padding: 15px; margin: 20px 0;">
+        window.htmlContent = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  body { font-family: sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: auto; padding: 20px; }
+  h1 { color: #2563eb; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+  h2 { color: #1e40af; margin-top: 30px; }
+  table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+  th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+  th { background-color: #f8fafc; font-weight: 600; }
+  .highlight { background-color: #fef9c3; padding: 2px 4px; border-radius: 4px; }
+  .info-box { background-color: #eff6ff; border-left: 4px solid #3b82f6; padding: 15px; margin: 20px 0; }
+  img { max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+</style>
+</head>
+<body>
+
+<h1>HTML 预览功能演示 (Sample)</h1>
+
+<p>这是一个用于测试 <strong>DocxJS Pro</strong> HTML 预览与导出功能的样例文件。它包含了常见的网页元素及基础的 CSS 样式支持。</p>
+
+<div class="info-box">
   <strong>提示：</strong> 您可以直接在编辑器中修改此 HTML 的源码，预览区域将实时更新。
 </div>
-<h2>数据表格</h2>
-<table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+
+<h2>1. 文本样式</h2>
+<p>支持常见的 HTML 标签：</p>
+<ul>
+  <li><strong>加粗文本</strong> (strong)</li>
+  <li><em>斜体文本</em> (em)</li>
+  <li><span class="highlight">带背景色的高亮文本</span> (span with style)</li>
+  <li><a href="#">超链接测试</a></li>
+</ul>
+
+<h2>2. 数据表格</h2>
+<p>支持复杂的表格布局和样式定义：</p>
+
+<table>
   <thead>
-    <tr style="background-color: #f8fafc;">
-      <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">负责人</th>
-      <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">进度</th>
+    <tr>
+      <th>项目阶段</th>
+      <th>负责人</th>
+      <th>状态</th>
+      <th>进度</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td style="border: 1px solid #ddd; padding: 12px;">张三</td>
-      <td style="border: 1px solid #ddd; padding: 12px; color: #059669;">100% (已完成)</td>
+      <td>需求分析</td>
+      <td>张三</td>
+      <td><span style="color: #059669;">已完成</span></td>
+      <td>100%</td>
+    </tr>
+    <tr>
+      <td>原型设计</td>
+      <td>李四</td>
+      <td><span style="color: #d97706;">进行中</span></td>
+      <td>65%</td>
+    </tr>
+    <tr>
+      <td>核心开发</td>
+      <td>王五</td>
+      <td><span style="color: #dc2626;">待启动</span></td>
+      <td>0%</td>
     </tr>
   </tbody>
 </table>
+
+<h2>3. 媒体元素</h2>
+<p>支持外链图片展示：</p>
 <p style="text-align: center;">
-  <img src="https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=600" alt="Office" style="max-width:100%; border-radius:8px;">
-</p>`;
+  <img src="https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=800&q=80" alt="Office Work">
+  <br>
+  <small style="color: #666;">图 1：远程协作办公场景示意图</small>
+</p>
+
+<h2>4. 列表展示</h2>
+<ol>
+  <li>第一步：导入 HTML 文件或粘贴源码</li>
+  <li>第二步：在预览窗口确认样式</li>
+  <li>第三步：点击“导出长图”或“导出 PDF”</li>
+</ol>
+
+</body>
+</html>`;
         triggerPreview();
         els.statusHTML.textContent = "Sample Loaded";
     });
@@ -1335,66 +1490,123 @@
         els.editorContainer.style.display = 'none';
     });
 
-    // 8. Capture Helpers
-    function getCaptureElement(mode) {
-        if (mode === 'html') return els.htmlPreview;
-        // For markdown, we target the docx wrapper if present, else paper container
-        const docxWrapper = document.querySelector('.docx-wrapper');
-        return docxWrapper || els.paper;
-    }
+        // 8. Capture Helpers
 
-    async function exportCapture(type, mode) {
-        const statusEl = mode === 'html' ? els.statusHTML : els.status;
-        statusEl.textContent = "Exporting...";
-        try {
-            const element = getCaptureElement(mode);
-            if (!element) throw new Error("Preview content not found");
+        window.getCaptureElement = function() {
 
-            const canvas = await html2canvas(element, { 
-                scale: 2, 
-                backgroundColor: '#ffffff', 
-                useCORS: true,
-                windowWidth: element.scrollWidth,
-                windowHeight: element.scrollHeight
-            });
-            
-            if (type === 'image') {
-                const link = document.createElement('a');
-                link.download = `export_${Date.now()}.png`;
-                link.href = canvas.toDataURL("image/png");
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                statusEl.textContent = "Image Exported";
-            } else if (type === 'pdf') {
-                const imgData = canvas.toDataURL('image/png');
-                const pdf = new jspdf.jsPDF('p', 'pt', 'a4');
-                const pageWidth = pdf.internal.pageSize.getWidth();
-                const pageHeight = pdf.internal.pageSize.getHeight();
-                const imgWidth = pageWidth;
-                const imgHeight = canvas.height * imgWidth / canvas.width;
+            if (currentMode === 'html') return els.htmlPreview;
 
-                let heightLeft = imgHeight;
-                let position = 0;
+            const docxWrapper = document.querySelector('.docx-wrapper');
 
-                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                heightLeft -= pageHeight;
+            return docxWrapper || els.paper;
 
-                while (heightLeft > 0) {
-                    position = heightLeft - imgHeight;
-                    pdf.addPage();
+        };
+
+    
+
+        async function exportCapture(type, mode) {
+
+            const statusEl = mode === 'html' ? els.statusHTML : els.status;
+
+            statusEl.textContent = "Exporting...";
+
+            try {
+
+                const element = getCaptureElement();
+
+                if (!element) throw new Error("Preview content not found");
+
+    
+
+                const canvas = await html2canvas(element, { 
+
+                    scale: 2, 
+
+                    backgroundColor: '#ffffff', 
+
+                    useCORS: true,
+
+                    windowWidth: element.scrollWidth,
+
+                    windowHeight: element.scrollHeight
+
+                });
+
+                
+
+                if (type === 'image') {
+
+                    const link = document.createElement('a');
+
+                    link.download = `export_${Date.now()}.png`;
+
+                    link.href = canvas.toDataURL("image/png");
+
+                    document.body.appendChild(link);
+
+                    link.click();
+
+                    document.body.removeChild(link);
+
+                    statusEl.textContent = "Image Exported";
+
+                } else if (type === 'pdf') {
+
+                    const imgData = canvas.toDataURL('image/png');
+
+                    const pdf = new jspdf.jsPDF('p', 'pt', 'a4');
+
+                    const pageWidth = pdf.internal.pageSize.getWidth();
+
+                    const pageHeight = pdf.internal.pageSize.getHeight();
+
+                    const imgWidth = pageWidth;
+
+                    const imgHeight = canvas.height * imgWidth / canvas.width;
+
+    
+
+                    let heightLeft = imgHeight;
+
+                    let position = 0;
+
+    
+
                     pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+
                     heightLeft -= pageHeight;
+
+    
+
+                    while (heightLeft > 0) {
+
+                        position = heightLeft - imgHeight;
+
+                        pdf.addPage();
+
+                        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+
+                        heightLeft -= pageHeight;
+
+                    }
+
+                    pdf.save(`export_${Date.now()}.pdf`);
+
+                    statusEl.textContent = "PDF Exported";
+
                 }
-                pdf.save(`export_${Date.now()}.pdf`);
-                statusEl.textContent = "PDF Exported";
+
+            } catch (e) {
+
+                console.error(e);
+
+                alert("Export Failed: " + e.message);
+
+                statusEl.textContent = "Error";
+
             }
-        } catch (e) {
-            console.error(e);
-            alert("Export Failed: " + e.message);
-            statusEl.textContent = "Error";
+
         }
-    }
 
     // Bind Export Buttons
     els.exportImgBtnMD.addEventListener('click', () => exportCapture('image', 'markdown'));
