@@ -279,6 +279,32 @@
       margin-bottom: 0;
     }
 
+    /* HTML Preview container */
+    #htmlPreview {
+      background: white;
+      width: 794px; /* ~A4 usable width at 96dpi */
+      min-height: 1123px;
+      margin: 24px auto;
+      padding: 40px 48px;
+      box-shadow: var(--shadow-paper);
+      border-radius: 8px;
+      color: #111827;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      line-height: 1.6;
+    }
+    #htmlPreview table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+    }
+    #htmlPreview table, #htmlPreview th, #htmlPreview td {
+      border: 1px solid #e5e7eb;
+    }
+    #htmlPreview th, #htmlPreview td {
+      padding: 8px;
+      text-align: left;
+    }
+
     /* Skeleton Loading */
     .skeleton {
       animation: pulse 1.5s infinite;
@@ -310,6 +336,9 @@
         📄 导入文件
         <input id="headerFileInput" type="file" accept=".md,.txt,.docx" style="display:none;">
       </label>
+      <button class="btn" id="importHtmlBtn">🌐 导入 HTML</button>
+      <input id="htmlFileInput" type="file" accept=".html,.htm" style="display:none;">
+      <button class="btn" id="modeToggleBtn">切换到 HTML 预览</button>
       <button class="btn" id="editMdBtn">📝 编辑内容</button>
       <button class="btn" id="exportImgBtn">🖼 导出长图</button>
       <button class="btn" id="exportPdfBtn">📄 导出 PDF</button>
@@ -589,6 +618,7 @@
       <!-- View Mode -->
       <div class="canvas-scroll" id="previewContainer">
         <div id="paper-container"></div>
+        <div id="htmlPreview" style="display:none;"></div>
       </div>
 
       <!-- Edit Mode (Hidden by default) -->
@@ -638,6 +668,7 @@
     let templatesCache = {};
     let currentStyleConfig = {};
     let debounceTimer = null;
+    let currentMode = 'markdown'; // 'markdown' | 'html'
     // Initial sample content
     let markdownContent = `# 示例文档 (一级标题)
 
@@ -688,6 +719,21 @@ Here is a demonstration of table styling:
 | 1 | System Architecture Design | Completed | Core Module |
 | 2 | Frontend UI Development | In Progress | Style Adjustment |
 | 3 | Backend API Integration | To Be Started | API Docking |`;
+    let htmlContent = `<h1>HTML 示例文档</h1>
+<p>这是一个简单的 HTML 预览示例，支持表格、图片、列表等常用元素。</p>
+<h2>列表</h2>
+<ul>
+  <li>条目 A</li>
+  <li>条目 B</li>
+  <li>条目 C</li>
+</ul>
+<h2>表格</h2>
+<table>
+  <tr><th>列1</th><th>列2</th><th>列3</th></tr>
+  <tr><td>单元格 1</td><td>单元格 2</td><td>单元格 3</td></tr>
+  <tr><td>单元格 4</td><td>单元格 5</td><td>单元格 6</td></tr>
+</table>
+<p><img src="https://via.placeholder.com/400x120" alt="占位图"></p>`;
 
     // --- Elements ---
     const els = {
@@ -708,7 +754,12 @@ Here is a demonstration of table styling:
       // Professional Mode
       jsonConfigEditor: document.getElementById('jsonConfigEditor'),
       applyJsonBtn: document.getElementById('applyJsonBtn'),
-      professionalModeDetails: document.getElementById('professionalModeDetails')
+      professionalModeDetails: document.getElementById('professionalModeDetails'),
+      // HTML
+      importHtmlBtn: document.getElementById('importHtmlBtn'),
+      htmlFileInput: document.getElementById('htmlFileInput'),
+      modeToggleBtn: document.getElementById('modeToggleBtn'),
+      htmlPreview: document.getElementById('htmlPreview')
     };
 
     // --- Initialization ---
@@ -738,6 +789,74 @@ Here is a demonstration of table styling:
     }
 
     // --- Logic ---
+    function sanitizeHtml(html) {
+      if (!html) return '';
+      const allowedTags = new Set([
+        'a','abbr','b','blockquote','br','caption','code','col','colgroup','div','em','figure','figcaption','h1','h2','h3','h4','h5','h6','hr','i','img','label','li','ol','p','pre','section','span','strong','sub','sup','table','tbody','td','tfoot','th','thead','tr','u','ul'
+      ]);
+      const globalAttrs = new Set(['class','id','style','title']);
+      const attrAllow = {
+        'a': ['href','target','rel'],
+        'img': ['src','alt','width','height']
+      };
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html || '', 'text/html');
+      if (!doc || !doc.body) return html || '';
+
+      const cleanNode = (node) => {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          const tag = node.tagName.toLowerCase();
+          if (!allowedTags.has(tag)) {
+            node.remove();
+            return;
+          }
+          [...node.attributes].forEach(attr => {
+            const name = attr.name.toLowerCase();
+            const value = attr.value || '';
+            const allowed = (attrAllow[tag] && attrAllow[tag].includes(name)) || globalAttrs.has(name);
+            const isEvent = name.startsWith('on');
+            if (!allowed || isEvent) {
+              node.removeAttribute(attr.name);
+              return;
+            }
+            if (name === 'href' || name === 'src') {
+              const safe = value.startsWith('https://') || value.startsWith('http://') || value.startsWith('data:') || value.startsWith('#');
+              if (!safe) node.removeAttribute(attr.name);
+            }
+          });
+        }
+        [...node.childNodes].forEach(child => cleanNode(child));
+      };
+      cleanNode(doc.body);
+      return doc.body.innerHTML;
+    }
+
+    function ensureHtmlContainer() {
+      if (!els.htmlPreview) {
+          els.htmlPreview = document.getElementById('htmlPreview');
+      }
+      if (!els.htmlPreview) {
+          // Fallback: recreate if not found
+          const container = document.createElement('div');
+          container.id = 'htmlPreview';
+          container.style.display = 'none';
+          container.style.background = 'white';
+          const parent = els.previewContainer || document.body;
+          parent.appendChild(container);
+          els.htmlPreview = container;
+      }
+      return els.htmlPreview;
+    }
+
+    function setMode(mode) {
+      currentMode = mode;
+      const isHtml = mode === 'html';
+      ensureHtmlContainer();
+      els.paper.style.display = isHtml ? 'none' : 'block';
+      els.htmlPreview.style.display = isHtml ? 'block' : 'none';
+      els.modeToggleBtn.textContent = isHtml ? '切换到 Markdown 预览' : '切换到 HTML 预览';
+      triggerPreview();
+    }
     
     function buildConfigFromInputs() {
       const getVal = (id) => document.getElementById(id).value;
@@ -916,6 +1035,23 @@ Here is a demonstration of table styling:
       
       debounceTimer = setTimeout(async () => {
         try {
+          if (currentMode === 'html') {
+              const container = ensureHtmlContainer();
+              if (!container) {
+                  els.status.textContent = "Preview Failed: HTML 预览容器未就绪";
+                  return;
+              }
+              try {
+                  const safeHtml = sanitizeHtml(htmlContent || '');
+                  container.innerHTML = safeHtml;
+                  els.status.textContent = "HTML Preview Updated";
+              } catch (err) {
+                  console.error(err);
+                  els.status.textContent = "Preview Failed: " + err.message;
+              }
+              return;
+          }
+
           // Sync UI inputs to State
           currentStyleConfig = buildConfigFromInputs();
           // Sync State to JSON Editor (if open)
@@ -936,7 +1072,7 @@ Here is a demonstration of table styling:
           els.status.textContent = "Preview Updated";
         } catch (err) {
           console.error(err);
-          els.status.textContent = "Preview Failed";
+          els.status.textContent = "Preview Failed: " + err.message;
         }
       }, 600); // 600ms debounce
     }
@@ -1006,6 +1142,10 @@ Here is a demonstration of table styling:
 
     // 5. Download
     els.downloadBtn.addEventListener('click', async () => {
+        if (currentMode === 'html') {
+            alert('当前为 HTML 预览模式，请切换到 Markdown 模式导出 Docx。');
+            return;
+        }
         const config = buildConfigFromInputs();
         els.status.textContent = "Converting...";
         try {
@@ -1055,6 +1195,26 @@ Here is a demonstration of table styling:
         els.headerFileInput.value = '';
     });
 
+    // 6.2 Import HTML
+    els.importHtmlBtn.addEventListener('click', () => {
+        els.htmlFileInput.click();
+    });
+    els.htmlFileInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        try {
+            htmlContent = await file.text();
+            setMode('html');
+            els.status.textContent = "HTML Imported";
+        } catch (err) {
+            console.error(err);
+            alert("HTML 导入失败: " + err.message);
+            els.status.textContent = "Import Failed";
+        } finally {
+            els.htmlFileInput.value = '';
+        }
+    });
+
     // 7. Edit Markdown (Inline)
     els.editMdBtn.addEventListener('click', () => {
         // Switch to Editor Mode
@@ -1062,13 +1222,17 @@ Here is a demonstration of table styling:
         els.editorContainer.style.display = 'flex';
         
         // Load Content
-        els.inlineMdEditor.value = markdownContent;
+        els.inlineMdEditor.value = currentMode === 'html' ? htmlContent : markdownContent;
         els.inlineMdEditor.focus();
     });
     
     // Save Edit
     els.saveInlineEdit.addEventListener('click', () => {
-        markdownContent = els.inlineMdEditor.value;
+        if (currentMode === 'html') {
+            htmlContent = els.inlineMdEditor.value;
+        } else {
+            markdownContent = els.inlineMdEditor.value;
+        }
         
         // Switch back to Preview Mode
         els.editorContainer.style.display = 'none';
@@ -1084,25 +1248,58 @@ Here is a demonstration of table styling:
         els.previewContainer.style.display = 'flex';
     });
 
+    function getCaptureElement() {
+        if (currentMode === 'html') {
+            return els.htmlPreview;
+        }
+        const docxWrapper = document.querySelector('.docx-wrapper');
+        return docxWrapper || document.getElementById('paper-container');
+    }
+
     // 8. Export PDF
     const exportPdfBtn = document.getElementById('exportPdfBtn');
     if (exportPdfBtn) {
         exportPdfBtn.addEventListener('click', async () => {
-            if (API.isElectron()) {
-                // Electron Native Print
-                els.status.textContent = "Exporting PDF...";
-                try {
-                    const success = await window.electronAPI.printToPDF();
-                    if(success) els.status.textContent = "PDF Exported";
-                    else els.status.textContent = "PDF Cancelled";
-                } catch (e) {
-                    console.error(e);
-                    alert("PDF Export Failed: " + e.message);
-                    els.status.textContent = "Error";
+            els.status.textContent = "Exporting PDF...";
+            try {
+                const element = getCaptureElement();
+                if (!element) throw new Error("Preview content not found");
+
+                // Capture full height of rendered doc
+                const canvas = await html2canvas(element, { 
+                    scale: 2, 
+                    backgroundColor: '#ffffff', 
+                    useCORS: true,
+                    windowWidth: element.scrollWidth,
+                    windowHeight: element.scrollHeight
+                });
+                
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jspdf.jsPDF('p', 'pt', 'a4');
+                const pageWidth = pdf.internal.pageSize.getWidth();
+                const pageHeight = pdf.internal.pageSize.getHeight();
+                const imgWidth = pageWidth;
+                const imgHeight = canvas.height * imgWidth / canvas.width;
+
+                let heightLeft = imgHeight;
+                let position = 0;
+
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+
+                while (heightLeft > 0) {
+                    position = heightLeft - imgHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
                 }
-            } else {
-                // Web: Browser Print
-                window.print();
+
+                pdf.save(`export_${Date.now()}.pdf`);
+                els.status.textContent = "PDF Exported";
+            } catch (e) {
+                console.error(e);
+                alert("PDF Export Failed: " + e.message);
+                els.status.textContent = "Error";
             }
         });
     }
@@ -1113,8 +1310,8 @@ Here is a demonstration of table styling:
         exportImgBtn.addEventListener('click', async () => {
             els.status.textContent = "Generating Image...";
             try {
-                // Target the wrapper created by docx-preview
-                const element = document.querySelector('.docx-wrapper') || document.getElementById('paper-container');
+                // Target the wrapper created by docx-preview or HTML container
+                const element = getCaptureElement();
                 if(!element) throw new Error("Preview content not found");
 
                 const canvas = await html2canvas(element, { 
@@ -1138,6 +1335,11 @@ Here is a demonstration of table styling:
             }
         });
     }
+
+    // Mode toggle
+    els.modeToggleBtn.addEventListener('click', () => {
+        setMode(currentMode === 'html' ? 'markdown' : 'html');
+    });
 
     // Start
     init();

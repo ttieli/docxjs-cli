@@ -10,6 +10,7 @@ const multer = require('multer');
 const mammoth = require('mammoth');
 const TurndownService = require('turndown');
 const { gfm } = require('turndown-plugin-gfm');
+const { normalizeStyleConfig } = require('../lib/style-normalizer');
 
 const app = express();
 const upload = multer({
@@ -50,7 +51,8 @@ app.post('/api/preview/dynamic', async (req, res) => {
         const { styleConfig, markdown } = req.body;
         // Limit markdown length for preview performance if needed, 
         // currently passing full content as requested.
-        const buffer = await generatePreviewBuffer(styleConfig || {}, markdown);
+        const normalizedStyle = normalizeStyleConfig(styleConfig || {});
+        const buffer = await generatePreviewBuffer(normalizedStyle, markdown);
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
         res.send(buffer);
     } catch (error) {
@@ -150,7 +152,7 @@ app.post('/api/convert', upload.single('referenceDoc'), async (req, res) => {
             }
         }
 
-        const buffer = await generateDocx(markdown, finalStyle);
+        const buffer = await generateDocx(markdown, normalizeStyleConfig(finalStyle));
         const downloadName = sanitizeFileName(filename) || 'output.docx';
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
         res.setHeader('Content-Disposition', `attachment; filename=${downloadName}`);

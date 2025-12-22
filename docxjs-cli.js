@@ -7,6 +7,7 @@ const { hideBin } = require('yargs/helpers');
 const inquirer = require('inquirer');
 const { generateDocx } = require('./lib/core');
 const { extractStyles } = require('./lib/python-bridge');
+const { normalizeStyleConfig } = require('./lib/style-normalizer');
 
 // --- 0. 加载配置 ---
 function loadTemplates(customConfigPath) {
@@ -104,7 +105,7 @@ function loadTemplates(customConfigPath) {
     try {
         const mdContent = fs.readFileSync(inputPath, 'utf-8');
         const baseDir = path.dirname(path.resolve(inputPath));
-        const buffer = await generateDocx(mdContent, currentStyle, baseDir);
+        const buffer = await generateDocx(mdContent, normalizeStyleConfig(currentStyle), baseDir);
         fs.writeFileSync(outputPath, buffer);
         console.log(`✅ Success! Created ${outputPath}`);
     } catch (e) {
