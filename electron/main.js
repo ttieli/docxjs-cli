@@ -9,6 +9,7 @@ const { generateDocx } = require('../lib/core');
 const { generatePreviewBuffer } = require('../lib/sample-generator');
 const templateManager = require('../lib/template-manager');
 const { extractStyles } = require('../lib/python-bridge');
+const { normalizeStyleConfig } = require('../lib/style-normalizer');
 
 // Helper: Merge Styles (copied from server/app.js)
 function mergeStyles(baseStyle, overrides) {
@@ -168,7 +169,7 @@ ipcMain.handle('convert', async (event, { markdown, templateName, styleConfig, r
             }
         }
 
-        const buffer = await generateDocx(markdown, finalStyle);
+        const buffer = await generateDocx(markdown, normalizeStyleConfig(finalStyle));
         
         // In Electron, we can return the buffer back to renderer to trigger download, 
         // OR we can save it directly using dialog.
@@ -183,6 +184,18 @@ ipcMain.handle('convert', async (event, { markdown, templateName, styleConfig, r
         if (tempDocPath) {
             fs.promises.unlink(tempDocPath).catch(() => {});
         }
+    }
+});
+
+// 4. Preview (Dynamic)
+ipcMain.handle('preview-template-dynamic', async (event, { styleConfig, markdown }) => {
+    try {
+        const normalizedStyle = normalizeStyleConfig(styleConfig || {});
+        const buffer = await generatePreviewBuffer(normalizedStyle, markdown);
+        return buffer;
+    } catch (error) {
+        console.error('Preview error:', error);
+        throw new Error(error.message);
     }
 });
 
@@ -214,4 +227,3 @@ ipcMain.handle('print-to-pdf', async (event) => {
         throw new Error(error.message);
     }
 });
-
