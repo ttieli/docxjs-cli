@@ -45,8 +45,12 @@
     @media print {
       body * { visibility: hidden; }
       #paper-container, #paper-container * { visibility: visible; }
+      #htmlPreview, #htmlPreview * { visibility: visible; }
+      
       #paper-container { position: absolute; left: 0; top: 0; margin: 0; padding: 0; transform: none !important; }
-      header, aside, .preview-toolbar { display: none !important; }
+      #htmlPreview { position: absolute; left: 0; top: 0; margin: 0; padding: 0; transform: none !important; width: 100% !important; box-shadow: none !important; }
+      
+      header, nav, aside, .action-bar, .preview-toolbar { display: none !important; }
       .app-body { height: auto; overflow: visible; }
       main.preview-stage { background: white; overflow: visible; padding: 0; }
       .canvas-scroll { padding: 0; overflow: visible; display: block; }
@@ -61,19 +65,41 @@
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
-      justify-content: space-between;
       padding: 0 20px;
       z-index: 10;
     }
     
     .brand { font-weight: 600; font-size: 18px; display: flex; align-items: center; gap: 8px; }
     .brand svg { color: var(--primary); }
+
+    /* Main Tabs */
+    .main-tabs {
+        display: flex;
+        background: white;
+        border-bottom: 1px solid var(--border);
+        padding: 0 20px;
+        gap: 20px;
+        flex-shrink: 0;
+    }
+    .tab-item {
+        padding: 12px 0;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-sub);
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        transition: all 0.2s;
+    }
+    .tab-item:hover { color: var(--primary); }
+    .tab-item.active {
+        color: var(--primary);
+        border-bottom-color: var(--primary);
+    }
     
-    .actions { display: flex; gap: 12px; }
-    
+    /* Actions & Buttons */
     .btn {
       height: 32px;
-      padding: 0 16px;
+      padding: 0 12px;
       border-radius: 6px;
       font-size: 13px;
       font-weight: 500;
@@ -85,6 +111,7 @@
       align-items: center;
       gap: 6px;
       transition: all 0.2s;
+      white-space: nowrap;
     }
     .btn:hover { background: var(--bg-input); }
     .btn-primary {
@@ -94,11 +121,12 @@
     }
     .btn-primary:hover { background: var(--primary-hover); }
 
-    /* Layout */
-    .app-body {
+    /* Layout Containers */
+    .view-container {
       display: flex;
       flex: 1;
       overflow: hidden;
+      /* Height handled by flex parent (body) */
     }
 
     /* Sidebar */
@@ -201,7 +229,7 @@
       margin-right: 8px;
     }
 
-    /* Tabs */
+    /* Tabs (Sidebar) */
     .tabs { display: flex; gap: 4px; background: var(--bg-input); padding: 4px; border-radius: 8px; margin-bottom: 16px; }
     .tab {
       flex: 1;
@@ -224,8 +252,27 @@
       flex-direction: column;
     }
 
+    .action-bar {
+        height: 48px;
+        background: white;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
+        gap: 12px;
+        justify-content: flex-end; /* Right align buttons */
+        flex-shrink: 0;
+    }
+    
+    .toolbar-title {
+        margin-right: auto;
+        font-weight: 600;
+        font-size: 14px;
+        color: var(--text-main);
+    }
+
     .preview-toolbar {
-      height: 40px;
+      height: 32px;
       background: rgba(0,0,0,0.4);
       display: flex;
       align-items: center;
@@ -234,6 +281,7 @@
       color: white;
       font-size: 12px;
       backdrop-filter: blur(4px);
+      flex-shrink: 0;
     }
 
     .canvas-scroll {
@@ -284,7 +332,7 @@
       background: white;
       width: 794px; /* ~A4 usable width at 96dpi */
       min-height: 1123px;
-      margin: 24px auto;
+      margin: 0 auto;
       padding: 40px 48px;
       box-shadow: var(--shadow-paper);
       border-radius: 8px;
@@ -305,22 +353,15 @@
       text-align: left;
     }
 
-    /* Skeleton Loading */
-    .skeleton {
-      animation: pulse 1.5s infinite;
-      background: #eee;
-    }
-    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-
-    /* Modal */
-    .modal-overlay {
-        position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(0,0,0,0.5); z-index: 100;
-        display: none; justify-content: center; align-items: center;
-    }
-    .modal {
-        background: white; padding: 24px; border-radius: 8px; width: 500px;
-        box-shadow: var(--shadow-paper);
+    /* Modal / Editor Overlay */
+    #editorContainer {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: #e5e7eb;
+        z-index: 100;
+        display: none;
+        flex-direction: column;
+        padding: 20px;
     }
   </style>
 </head>
@@ -331,26 +372,18 @@
       <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
       DocxJS Editor
     </div>
-    <div class="actions">
-      <label for="headerFileInput" class="btn" style="cursor:pointer;">
-        📄 导入文件
-        <input id="headerFileInput" type="file" accept=".md,.txt,.docx" style="display:none;">
-      </label>
-      <button class="btn" id="importHtmlBtn">🌐 导入 HTML</button>
-      <input id="htmlFileInput" type="file" accept=".html,.htm" style="display:none;">
-      <button class="btn" id="modeToggleBtn">切换到 HTML 预览</button>
-      <button class="btn" id="editMdBtn">📝 编辑内容</button>
-      <button class="btn" id="exportImgBtn">🖼 导出长图</button>
-      <button class="btn" id="exportPdfBtn">📄 导出 PDF</button>
-      <button class="btn btn-primary" id="downloadBtn">⬇ 导出 Docx</button>
-    </div>
   </header>
 
-  <div class="app-body">
-    <!-- Sidebar -->
+  <!-- Navigation Tabs -->
+  <nav class="main-tabs">
+    <div class="tab-item active" id="tab-md" onclick="setMode('markdown')">Markdown & Docx</div>
+    <div class="tab-item" id="tab-html" onclick="setMode('html')">HTML Preview</div>
+  </nav>
+
+  <!-- Markdown View (Sidebar + Preview) -->
+  <div id="view-markdown" class="view-container">
     <aside>
       <div class="scroll-container">
-        
         <div class="control-group">
           <label>选择基础模板</label>
           <select id="templateSelect">
@@ -607,37 +640,67 @@
       </div>
     </aside>
 
-    <!-- Preview Stage -->
     <main class="preview-stage">
-      <div class="preview-toolbar">
-        <span id="statusText">Ready</span>
-        <span style="opacity:0.5">|</span>
-        <span>Preview Scale: <span id="scaleVal">100%</span></span>
-      </div>
-      
-      <!-- View Mode -->
-      <div class="canvas-scroll" id="previewContainer">
-        <div id="paper-container"></div>
-        <div id="htmlPreview" style="display:none;"></div>
+      <!-- Markdown Action Bar -->
+      <div class="action-bar">
+         <span class="toolbar-title">Markdown Preview</span>
+         <label for="headerFileInput" class="btn" style="cursor:pointer;">
+           📄 导入文件
+           <input id="headerFileInput" type="file" accept=".md,.txt,.docx" style="display:none;">
+         </label>
+         <button class="btn" id="editMdBtn">📝 编辑内容</button>
+         <button class="btn" id="exportImgBtnMD">🖼 导出长图</button>
+         <button class="btn" id="exportPdfBtnMD">📄 导出 PDF</button>
+         <button class="btn btn-primary" id="downloadBtn">⬇ 导出 Docx</button>
       </div>
 
-      <!-- Edit Mode (Hidden by default) -->
-      <div id="editorContainer" style="display:none; flex:1; flex-direction:column; padding:20px; background:#e5e7eb; overflow:hidden;">
-         <div style="flex:1; display:flex; flex-direction:column; background:white; border-radius:8px; box-shadow:var(--shadow-sm); overflow:hidden;">
-            <div style="padding:10px 15px; border-bottom:1px solid #eee; background:#f9fafb; font-weight:500; font-size:13px; color:#374151;">
-              Markdown Source
-            </div>
-            <textarea id="inlineMdEditor" style="flex:1; width:100%; border:none; padding:15px; font-family:'Menlo', 'Monaco', 'Courier New', monospace; resize:none; font-size:14px; line-height:1.6; outline:none; box-shadow:none; border-radius:0;"></textarea>
-            <div style="padding:12px 15px; border-top:1px solid #eee; background:#f9fafb; display:flex; gap:10px; justify-content:flex-end;">
-              <button class="btn" id="cancelInlineEdit">取消 (Cancel)</button>
-              <button class="btn btn-primary" id="saveInlineEdit">保存并预览 (Save & Preview)</button>
-            </div>
-         </div>
+      <div class="preview-toolbar">
+        <span id="statusText">Ready</span>
+      </div>
+      
+      <div class="canvas-scroll" id="previewContainerMD">
+        <div id="paper-container"></div>
       </div>
     </main>
   </div>
 
+  <!-- HTML View (Full Width) -->
+  <div id="view-html" class="view-container" style="display:none;">
+    <main class="preview-stage" style="width:100%">
+      <!-- HTML Action Bar -->
+      <div class="action-bar">
+         <span class="toolbar-title">HTML Preview</span>
+         <button class="btn" id="importHtmlBtn">🌐 导入 HTML</button>
+         <button class="btn" id="loadSampleHtmlBtn">💡 载入示例</button>
+         <input id="htmlFileInput" type="file" accept=".html,.htm" style="display:none;">
+         <button class="btn" id="editHtmlBtn">📝 编辑源码</button>
+         <button class="btn" id="exportImgBtnHTML">🖼 导出长图</button>
+         <button class="btn" id="exportPdfBtnHTML">📄 导出 PDF</button>
+      </div>
+      
+      <div class="preview-toolbar">
+         <span id="statusTextHTML">Ready</span>
+      </div>
 
+      <div class="canvas-scroll" id="previewContainerHTML">
+         <div id="htmlPreview"></div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Editor Overlay (Shared) -->
+  <div id="editorContainer">
+     <div style="flex:1; display:flex; flex-direction:column; background:white; border-radius:8px; box-shadow:var(--shadow-sm); overflow:hidden;">
+        <div style="padding:10px 15px; border-bottom:1px solid #eee; background:#f9fafb; font-weight:500; font-size:13px; color:#374151;">
+          Source Editor <span id="editorModeLabel" style="margin-left:8px; font-weight:normal; color:#666;"></span>
+        </div>
+        <textarea id="inlineEditor" style="flex:1; width:100%; border:none; padding:15px; font-family:'Menlo', 'Monaco', 'Courier New', monospace; resize:none; font-size:14px; line-height:1.6; outline:none; box-shadow:none; border-radius:0;"></textarea>
+        <div style="padding:12px 15px; border-top:1px solid #eee; background:#f9fafb; display:flex; gap:10px; justify-content:flex-end;">
+          <button class="btn" id="cancelInlineEdit">取消 (Cancel)</button>
+          <button class="btn btn-primary" id="saveInlineEdit">保存并预览 (Save & Preview)</button>
+        </div>
+     </div>
+  </div>
 
   <script src="api-adapter.js"></script>
   <script>
@@ -669,97 +732,121 @@
     let currentStyleConfig = {};
     let debounceTimer = null;
     let currentMode = 'markdown'; // 'markdown' | 'html'
-    // Initial sample content
-    let markdownContent = `# 示例文档 (一级标题)
-
-这是文档的正文部分。此处展示了**粗体**、*斜体*以及普通文本的行距和字体效果。通过修改左侧的样式配置，您可以实时预览正文的字体、字号、颜色和行间距的变化。
-
-## 二级标题样例
-二级标题通常用于章节划分。
-
-### 三级标题样例
-三级标题用于更细致的内容分组。
-
-## 列表与表格展示
-
-下面是一个无序列表：
-- 列表项 1：测试缩进和对齐
-- 列表项 2：测试字体一致性
-- 列表项 3：包含 **粗体** 的列表项
-
-下面是一个表格样式的展示：
-
-| 序号 | 项目名称 | 状态 | 备注 |
-| :--- | :--- | :--- | :--- |
-| 1 | 系统架构设计 | 完成 | 核心模块 |
-| 2 | 前端界面开发 | 进行中 | 样式调整 |
-| 3 | 后端接口联调 | 待开始 | API 对接 |
-
-# Sample Document (Level One Heading)
-
-This is the main body of the document. It demonstrates **bold**, *italic*, and regular text with line spacing and font effects. By modifying the style configurations on the left, you can instantly preview changes to the body font, size, color, and line spacing.
-
-## Level Two Heading Example
-A level two heading is typically used for chapter divisions.
-
-### Level Three Heading Example
-A level three heading is used for more detailed content grouping.
-
-## Lists and Tables Display
-
-Below is an unordered list:
-- List Item 1: Testing indentation and alignment
-- List Item 2: Testing font consistency
-- List Item 3: List item with **bold** text
-
-Here is a demonstration of table styling:
-
-| No. | Item Name | Status | Remarks |
-| :--- | :--- | :--- | :--- |
-| 1 | System Architecture Design | Completed | Core Module |
-| 2 | Frontend UI Development | In Progress | Style Adjustment |
-| 3 | Backend API Integration | To Be Started | API Docking |`;
-    let htmlContent = `<h1>HTML 示例文档</h1>
-<p>这是一个简单的 HTML 预览示例，支持表格、图片、列表等常用元素。</p>
-<h2>列表</h2>
-<ul>
-  <li>条目 A</li>
-  <li>条目 B</li>
-  <li>条目 C</li>
-</ul>
-<h2>表格</h2>
-<table>
-  <tr><th>列1</th><th>列2</th><th>列3</th></tr>
-  <tr><td>单元格 1</td><td>单元格 2</td><td>单元格 3</td></tr>
-  <tr><td>单元格 4</td><td>单元格 5</td><td>单元格 6</td></tr>
-</table>
-<p><img src="https://via.placeholder.com/400x120" alt="占位图"></p>`;
-
-    // --- Elements ---
-    const els = {
-      templateSelect: document.getElementById('templateSelect'),
-      paper: document.getElementById('paper-container'),
-      status: document.getElementById('statusText'),
-      inputs: document.querySelectorAll('input, select'), // all inputs
-      downloadBtn: document.getElementById('downloadBtn'),
-      headerFileInput: document.getElementById('headerFileInput'),
-      editMdBtn: document.getElementById('editMdBtn'),
-      refDocInput: document.getElementById('refDocInput'),
-      // New Elements
-      previewContainer: document.getElementById('previewContainer'),
+    
+        // Initial content
+        window.markdownContent = `# 示例文档 (一级标题)
+    
+    这是文档的正文部分。此处展示了**粗体**、*斜体*以及普通文本的行距和字体效果。通过修改左侧的样式配置，您可以实时预览正文的字体、字号、颜色和行间距的变化。
+    
+    ## 二级标题样例
+    二级标题通常用于章节划分。
+    
+    ### 三级标题样例
+    三级标题用于更细致的内容分组。
+    
+    ## 列表与表格展示
+    
+    下面是一个无序列表：
+    - 列表项 1：测试缩进和对齐
+    - 列表项 2：测试字体一致性
+    - 列表项 3：包含 **粗体** 的列表项
+    
+    下面是一个表格样式的展示：
+    
+    | 序号 | 项目名称 | 状态 | 备注 |
+    | :--- | :--- | :--- | :--- |
+    | 1 | 系统架构设计 | 完成 | 核心模块 |
+    | 2 | 前端界面开发 | 进行中 | 样式调整 |
+    | 3 | 后端接口联调 | 待开始 | API 对接 |
+    
+    # Sample Document (Level One Heading)
+    
+    This is the main body of the document. It demonstrates **bold**, *italic*, and regular text with line spacing and font effects. By modifying the style configurations on the left, you can instantly preview changes to the body font, size, color, and line spacing.
+    
+    ## Level Two Heading Example
+    A level two heading is typically used for chapter divisions.
+    
+    ### Level Three Heading Example
+    A level three heading is used for more detailed content grouping.
+    
+    ## Lists and Tables Display
+    
+    Below is an unordered list:
+    - List Item 1: Testing indentation and alignment
+    - List Item 2: Testing font consistency
+    - List Item 3: List item with **bold** text
+    
+    Here is a demonstration of table styling:
+    
+    | No. | Item Name | Status | Remarks |
+    | :--- | :--- | :--- | :--- |
+    | 1 | System Architecture Design | Completed | Core Module |
+    | 2 | Frontend UI Development | In Progress | Style Adjustment |
+    | 3 | Backend API Integration | To Be Started | API Docking |`;
+        window.htmlContent = `<h1>HTML 示例文档 (Sample)</h1>
+    <p>这是一个高质量的 HTML 预览示例，支持 CSS 样式、表格和列表。</p>
+    <div style="background: #f0f7ff; border-left: 4px solid #0070f3; padding: 15px; margin: 20px 0;">
+      <strong>提示：</strong> HTML 导出功能会将此视图完整渲染为长图或 PDF。
+    </div>
+    <h2>数据表格</h2>
+    <table style="width: 100%; border-collapse: collapse;">
+      <tr style="background: #f9fafb;">
+        <th style="border: 1px solid #ddd; padding: 8px;">项目</th>
+        <th style="border: 1px solid #ddd; padding: 8px;">状态</th>
+      </tr>
+      <tr>
+        <td style="border: 1px solid #ddd; padding: 8px;">预览引擎</td>
+        <td style="border: 1px solid #ddd; padding: 8px; color: green;">运行中</td>
+      </tr>
+      <tr>
+        <td style="border: 1px solid #ddd; padding: 8px;">PDF 导出</td>
+        <td style="border: 1px solid #ddd; padding: 8px; color: green;">就绪</td>
+      </tr>
+    </table>
+    <h2>图片展示</h2>
+    <p><img src="https://via.placeholder.com/600x200/2563eb/ffffff?text=HTML+Preview+Success" style="max-width:100%; border-radius:8px;"></p>`;
+    
+        // --- Elements ---
+        const els = {
+          templateSelect: document.getElementById('templateSelect'),
+          paper: document.getElementById('paper-container'),
+          status: document.getElementById('statusText'),
+          statusHTML: document.getElementById('statusTextHTML'),
+          inputs: document.querySelectorAll('input, select'), 
+          
+          // Layout Tabs
+          tabMD: document.getElementById('tab-md'),
+          tabHTML: document.getElementById('tab-html'),
+          viewMD: document.getElementById('view-markdown'),
+          viewHTML: document.getElementById('view-html'),
+          
+          // Markdown Actions
+          downloadBtn: document.getElementById('downloadBtn'),
+          headerFileInput: document.getElementById('headerFileInput'),
+          editMdBtn: document.getElementById('editMdBtn'),
+          exportImgBtnMD: document.getElementById('exportImgBtnMD'),
+          exportPdfBtnMD: document.getElementById('exportPdfBtnMD'),
+          refDocInput: document.getElementById('refDocInput'),
+    
+          // HTML Actions
+          importHtmlBtn: document.getElementById('importHtmlBtn'),
+          loadSampleHtmlBtn: document.getElementById('loadSampleHtmlBtn'),
+          htmlFileInput: document.getElementById('htmlFileInput'),
+          editHtmlBtn: document.getElementById('editHtmlBtn'),
+          exportImgBtnHTML: document.getElementById('exportImgBtnHTML'),
+          exportPdfBtnHTML: document.getElementById('exportPdfBtnHTML'),
+          htmlPreview: document.getElementById('htmlPreview'),      
+      // Editor
       editorContainer: document.getElementById('editorContainer'),
-      inlineMdEditor: document.getElementById('inlineMdEditor'),
+      inlineEditor: document.getElementById('inlineEditor'),
+      editorModeLabel: document.getElementById('editorModeLabel'),
       saveInlineEdit: document.getElementById('saveInlineEdit'),
       cancelInlineEdit: document.getElementById('cancelInlineEdit'),
+      
       // Professional Mode
       jsonConfigEditor: document.getElementById('jsonConfigEditor'),
       applyJsonBtn: document.getElementById('applyJsonBtn'),
-      professionalModeDetails: document.getElementById('professionalModeDetails'),
-      // HTML
-      importHtmlBtn: document.getElementById('importHtmlBtn'),
-      htmlFileInput: document.getElementById('htmlFileInput'),
-      modeToggleBtn: document.getElementById('modeToggleBtn'),
-      htmlPreview: document.getElementById('htmlPreview')
+      professionalModeDetails: document.getElementById('professionalModeDetails')
     };
 
     // --- Initialization ---
@@ -787,10 +874,28 @@ Here is a demonstration of table styling:
         els.status.textContent = "Error loading templates";
       }
     }
+    
+    // --- Mode Switching ---
+    window.setMode = function(mode) {
+        currentMode = mode;
+        if(mode === 'html') {
+            els.tabMD.classList.remove('active');
+            els.tabHTML.classList.add('active');
+            els.viewMD.style.display = 'none';
+            els.viewHTML.style.display = 'flex';
+        } else {
+            els.tabHTML.classList.remove('active');
+            els.tabMD.classList.add('active');
+            els.viewHTML.style.display = 'none';
+            els.viewMD.style.display = 'flex';
+        }
+        triggerPreview();
+    }
 
     // --- Logic ---
     function sanitizeHtml(html) {
       if (!html) return '';
+      // Basic sanitizer logic (same as before)
       const allowedTags = new Set([
         'a','abbr','b','blockquote','br','caption','code','col','colgroup','div','em','figure','figcaption','h1','h2','h3','h4','h5','h6','hr','i','img','label','li','ol','p','pre','section','span','strong','sub','sup','table','tbody','td','tfoot','th','thead','tr','u','ul'
       ]);
@@ -831,45 +936,16 @@ Here is a demonstration of table styling:
       return doc.body.innerHTML;
     }
 
-    function ensureHtmlContainer() {
-      if (!els.htmlPreview) {
-          els.htmlPreview = document.getElementById('htmlPreview');
-      }
-      if (!els.htmlPreview) {
-          // Fallback: recreate if not found
-          const container = document.createElement('div');
-          container.id = 'htmlPreview';
-          container.style.display = 'none';
-          container.style.background = 'white';
-          const parent = els.previewContainer || document.body;
-          parent.appendChild(container);
-          els.htmlPreview = container;
-      }
-      return els.htmlPreview;
-    }
-
-    function setMode(mode) {
-      currentMode = mode;
-      const isHtml = mode === 'html';
-      ensureHtmlContainer();
-      els.paper.style.display = isHtml ? 'none' : 'block';
-      els.htmlPreview.style.display = isHtml ? 'block' : 'none';
-      els.modeToggleBtn.textContent = isHtml ? '切换到 Markdown 预览' : '切换到 HTML 预览';
-      triggerPreview();
-    }
-    
     function buildConfigFromInputs() {
       const getVal = (id) => document.getElementById(id).value;
       const getNum = (id) => Number(document.getElementById(id).value) || undefined;
       const getCol = (id) => document.getElementById(id).value; // Hex
       
-      // Helper: Convert UI PT to Backend Half-PT
       const getHalfPt = (id) => {
           const val = getNum(id);
           return val !== undefined ? val * 2 : undefined;
       };
 
-      // Start with current config to preserve hidden fields (from JSON edits)
       const base = JSON.parse(JSON.stringify(currentStyleConfig || {}));
 
       const uiConfig = {
@@ -904,7 +980,7 @@ Here is a demonstration of table styling:
         paragraphIndent: getNum('paragraphIndent'),
         
         margin: {
-          ...(base.margin || {}), // preserve other margin props if any
+          ...(base.margin || {}),
           top: getVal('marginTop') || undefined,
           bottom: getVal('marginBottom') || undefined,
           left: getVal('marginLeft') || undefined,
@@ -912,7 +988,7 @@ Here is a demonstration of table styling:
         },
         
         table: {
-            ...(base.table || {}), // preserve other table props
+            ...(base.table || {}),
             borderStyle: getVal('tableBorderStyle') || undefined,
             borderSize: getNum('tableBorderSize'),
             borderColor: inputToHex(getCol('tableBorderColor')),
@@ -920,8 +996,6 @@ Here is a demonstration of table styling:
         }
       };
 
-      // Merge UI config into base
-      // We do a shallow merge for top-level, and specific merges for nested objects
       const merged = { ...base, ...uiConfig };
       merged.margin = { ...base.margin, ...uiConfig.margin };
       merged.table = { ...base.table, ...uiConfig.table };
@@ -939,11 +1013,8 @@ Here is a demonstration of table styling:
     els.applyJsonBtn.addEventListener('click', () => {
         try {
             const newConfig = JSON.parse(els.jsonConfigEditor.value);
-            // Update State
             currentStyleConfig = newConfig;
-            // Update UI to match
             applyValuesFromConfig(currentStyleConfig);
-            // Trigger Preview
             triggerPreview();
             alert("Configuration Applied!");
         } catch(e) {
@@ -964,7 +1035,6 @@ Here is a demonstration of table styling:
         if(el) el.value = (v === undefined ? '' : v); 
       };
       
-      // Helper: Convert Backend Half-PT to UI PT
       const setPt = (id, halfPtVal, displayId) => {
           const ptVal = halfPtVal ? halfPtVal / 2 : undefined;
           setVal(id, ptVal);
@@ -1019,7 +1089,6 @@ Here is a demonstration of table styling:
       }
     }
 
-    // Helper for Color
     function hexToInput(hex) {
        if (!hex) return '#000000';
        return hex.startsWith('#') ? hex : '#' + hex;
@@ -1030,36 +1099,36 @@ Here is a demonstration of table styling:
 
     // --- Preview Logic ---
     function triggerPreview() {
-      els.status.textContent = "Updating Preview...";
+      // Logic split by mode
+      if (currentMode === 'html') {
+          els.statusHTML.textContent = "Updating Preview...";
+      } else {
+          els.status.textContent = "Updating Preview...";
+      }
+
       if (debounceTimer) clearTimeout(debounceTimer);
       
       debounceTimer = setTimeout(async () => {
         try {
           if (currentMode === 'html') {
-              const container = ensureHtmlContainer();
-              if (!container) {
-                  els.status.textContent = "Preview Failed: HTML 预览容器未就绪";
-                  return;
-              }
+              const container = els.htmlPreview;
+              if (!container) return;
               try {
-                  const safeHtml = sanitizeHtml(htmlContent || '');
+                  const safeHtml = sanitizeHtml(window.htmlContent || '');
                   container.innerHTML = safeHtml;
-                  els.status.textContent = "HTML Preview Updated";
+                  els.statusHTML.textContent = "HTML Preview Updated";
               } catch (err) {
                   console.error(err);
-                  els.status.textContent = "Preview Failed: " + err.message;
+                  els.statusHTML.textContent = "Preview Failed: " + err.message;
               }
               return;
           }
 
-          // Sync UI inputs to State
+          // Markdown Mode
           currentStyleConfig = buildConfigFromInputs();
-          // Sync State to JSON Editor (if open)
           updateJsonEditorFromState();
-
           const config = currentStyleConfig;
-          // Pass current markdown content for live preview
-          const blob = await API.preview(config, markdownContent);
+          const blob = await API.preview(config, window.markdownContent);
           
           els.paper.innerHTML = '';
           await docx.renderAsync(blob, els.paper, null, {
@@ -1073,17 +1142,18 @@ Here is a demonstration of table styling:
         } catch (err) {
           console.error(err);
           els.status.textContent = "Preview Failed: " + err.message;
+          if(currentMode === 'html') els.statusHTML.textContent = "Error";
         }
-      }, 600); // 600ms debounce
+      }, 600); 
     }
 
     // --- Event Listeners ---
     
-    // 1. All inputs trigger preview (and update chinese font size display)
+    // 1. Inputs
     document.querySelectorAll('input, select').forEach(el => {
-      if(el.id === 'templateSelect' || el.id === 'refDocInput' || el.type === 'file') return;
+      // Exclude file inputs and editor
+      if(el.type === 'file' || el.tagName === 'TEXTAREA') return;
       el.addEventListener('input', () => {
-        // Update Chinese font size display for relevant inputs
         if (el.id.startsWith('fontSizeH') || el.id === 'fontSizeMain') {
             const chineseDisplayId = 'chinese' + el.id.charAt(0).toUpperCase() + el.id.slice(1);
             const chineseDisplayEl = document.getElementById(chineseDisplayId);
@@ -1091,12 +1161,13 @@ Here is a demonstration of table styling:
                 chineseDisplayEl.textContent = getChineseFontSize(el.value);
             }
         }
-        triggerPreview();
+        if(currentMode === 'markdown') triggerPreview();
       });
-      el.addEventListener('change', triggerPreview);
+      el.addEventListener('change', () => {
+          if(currentMode === 'markdown') triggerPreview();
+      });
     });
 
-    // Initialize Chinese font size display for all font size inputs
     const fontSizeInputs = [
         'fontSizeH1', 'fontSizeH2', 'fontSizeH3', 'fontSizeH4', 'fontSizeH5', 'fontSizeH6', 'fontSizeMain'
     ];
@@ -1113,13 +1184,13 @@ Here is a demonstration of table styling:
     els.templateSelect.addEventListener('change', (e) => {
         const tId = e.target.value;
         if(templatesCache[tId]) {
-            currentStyleConfig = JSON.parse(JSON.stringify(templatesCache[tId])); // Deep copy
+            currentStyleConfig = JSON.parse(JSON.stringify(templatesCache[tId]));
             applyValuesFromConfig(currentStyleConfig);
             triggerPreview();
         }
     });
     
-    // 3. Reference Doc Import
+    // 3. Reference Doc
     els.refDocInput.addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if(!file) return;
@@ -1128,29 +1199,24 @@ Here is a demonstration of table styling:
 
     // 4. Tabs for Headings
     document.querySelectorAll('.tab').forEach(tab => {
+        if(tab.classList.contains('tab-item')) return; // Skip main tabs
         tab.addEventListener('click', () => {
-             // UI toggle
-             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+             document.querySelectorAll('#headingTabs .tab').forEach(t => t.classList.remove('active'));
              tab.classList.add('active');
              
-             // Content toggle
-             const target = tab.dataset.target; // h1, h2, h3
+             const target = tab.dataset.target; 
              document.querySelectorAll('.style-pane').forEach(p => p.style.display = 'none');
              document.getElementById(target + '-controls').style.display = 'block';
         });
     });
 
-    // 5. Download
+    // 5. Download Docx
     els.downloadBtn.addEventListener('click', async () => {
-        if (currentMode === 'html') {
-            alert('当前为 HTML 预览模式，请切换到 Markdown 模式导出 Docx。');
-            return;
-        }
         const config = buildConfigFromInputs();
         els.status.textContent = "Converting...";
         try {
             const blob = await API.convert({
-                markdown: markdownContent,
+                markdown: window.markdownContent,
                 styleConfig: config,
                 filename: 'document.docx'
             });
@@ -1168,30 +1234,26 @@ Here is a demonstration of table styling:
         }
     });
 
-    // 6. Header File Import (.md / .docx)
+    // 6. Import Markdown
     els.headerFileInput.addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if (!file) return;
-
         els.status.textContent = "Loading File...";
         try {
             if (file.name.toLowerCase().endsWith('.docx')) {
                 const data = await API.importDocx(file);
-                markdownContent = data.markdown || '';
+                window.markdownContent = data.markdown || '';
                 els.status.textContent = "DOCX Imported";
             } else {
-                // Text/Markdown
-                markdownContent = await file.text();
+                window.markdownContent = await file.text();
                 els.status.textContent = "Markdown Imported";
             }
-            // Auto refresh preview with new content
             triggerPreview();
         } catch (err) {
             console.error(err);
             alert("Import failed: " + err.message);
             els.status.textContent = "Import Failed";
         }
-        // Reset to allow re-selection
         els.headerFileInput.value = '';
     });
 
@@ -1203,77 +1265,108 @@ Here is a demonstration of table styling:
         const file = e.target.files[0];
         if (!file) return;
         try {
-            htmlContent = await file.text();
-            setMode('html');
-            els.status.textContent = "HTML Imported";
+            window.htmlContent = await file.text();
+            els.statusHTML.textContent = "HTML Imported";
+            triggerPreview(); // in HTML mode
         } catch (err) {
             console.error(err);
             alert("HTML 导入失败: " + err.message);
-            els.status.textContent = "Import Failed";
+            els.statusHTML.textContent = "Import Failed";
         } finally {
             els.htmlFileInput.value = '';
         }
     });
 
-    // 7. Edit Markdown (Inline)
+    // 6.3 Load Sample HTML
+    els.loadSampleHtmlBtn.addEventListener('click', () => {
+        window.htmlContent = `<h1>HTML 预览功能演示 (Sample)</h1>
+<p>这是一个用于测试 <strong>DocxJS Pro</strong> HTML 预览与导出功能的样例文件。</p>
+<div style="background-color: #eff6ff; border-left: 4px solid #3b82f6; padding: 15px; margin: 20px 0;">
+  <strong>提示：</strong> 您可以直接在编辑器中修改此 HTML 的源码，预览区域将实时更新。
+</div>
+<h2>数据表格</h2>
+<table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+  <thead>
+    <tr style="background-color: #f8fafc;">
+      <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">负责人</th>
+      <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">进度</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="border: 1px solid #ddd; padding: 12px;">张三</td>
+      <td style="border: 1px solid #ddd; padding: 12px; color: #059669;">100% (已完成)</td>
+    </tr>
+  </tbody>
+</table>
+<p style="text-align: center;">
+  <img src="https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=600" alt="Office" style="max-width:100%; border-radius:8px;">
+</p>`;
+        triggerPreview();
+        els.statusHTML.textContent = "Sample Loaded";
+    });
+
+    // 7. Edit Buttons
     els.editMdBtn.addEventListener('click', () => {
-        // Switch to Editor Mode
-        els.previewContainer.style.display = 'none';
+        els.editorModeLabel.textContent = "(Markdown)";
+        els.inlineEditor.value = window.markdownContent;
         els.editorContainer.style.display = 'flex';
-        
-        // Load Content
-        els.inlineMdEditor.value = currentMode === 'html' ? htmlContent : markdownContent;
-        els.inlineMdEditor.focus();
+        els.inlineEditor.focus();
     });
     
-    // Save Edit
+    els.editHtmlBtn.addEventListener('click', () => {
+        els.editorModeLabel.textContent = "(HTML)";
+        els.inlineEditor.value = window.htmlContent;
+        els.editorContainer.style.display = 'flex';
+        els.inlineEditor.focus();
+    });
+    
     els.saveInlineEdit.addEventListener('click', () => {
         if (currentMode === 'html') {
-            htmlContent = els.inlineMdEditor.value;
+            window.htmlContent = els.inlineEditor.value;
         } else {
-            markdownContent = els.inlineMdEditor.value;
+            window.markdownContent = els.inlineEditor.value;
         }
-        
-        // Switch back to Preview Mode
         els.editorContainer.style.display = 'none';
-        els.previewContainer.style.display = 'flex';
-        
-        triggerPreview(); // Refresh
+        triggerPreview();
     });
 
-    // Cancel Edit
     els.cancelInlineEdit.addEventListener('click', () => {
-        // Simply switch back without saving
         els.editorContainer.style.display = 'none';
-        els.previewContainer.style.display = 'flex';
     });
 
-    function getCaptureElement() {
-        if (currentMode === 'html') {
-            return els.htmlPreview;
-        }
+    // 8. Capture Helpers
+    function getCaptureElement(mode) {
+        if (mode === 'html') return els.htmlPreview;
+        // For markdown, we target the docx wrapper if present, else paper container
         const docxWrapper = document.querySelector('.docx-wrapper');
-        return docxWrapper || document.getElementById('paper-container');
+        return docxWrapper || els.paper;
     }
 
-    // 8. Export PDF
-    const exportPdfBtn = document.getElementById('exportPdfBtn');
-    if (exportPdfBtn) {
-        exportPdfBtn.addEventListener('click', async () => {
-            els.status.textContent = "Exporting PDF...";
-            try {
-                const element = getCaptureElement();
-                if (!element) throw new Error("Preview content not found");
+    async function exportCapture(type, mode) {
+        const statusEl = mode === 'html' ? els.statusHTML : els.status;
+        statusEl.textContent = "Exporting...";
+        try {
+            const element = getCaptureElement(mode);
+            if (!element) throw new Error("Preview content not found");
 
-                // Capture full height of rendered doc
-                const canvas = await html2canvas(element, { 
-                    scale: 2, 
-                    backgroundColor: '#ffffff', 
-                    useCORS: true,
-                    windowWidth: element.scrollWidth,
-                    windowHeight: element.scrollHeight
-                });
-                
+            const canvas = await html2canvas(element, { 
+                scale: 2, 
+                backgroundColor: '#ffffff', 
+                useCORS: true,
+                windowWidth: element.scrollWidth,
+                windowHeight: element.scrollHeight
+            });
+            
+            if (type === 'image') {
+                const link = document.createElement('a');
+                link.download = `export_${Date.now()}.png`;
+                link.href = canvas.toDataURL("image/png");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                statusEl.textContent = "Image Exported";
+            } else if (type === 'pdf') {
                 const imgData = canvas.toDataURL('image/png');
                 const pdf = new jspdf.jsPDF('p', 'pt', 'a4');
                 const pageWidth = pdf.internal.pageSize.getWidth();
@@ -1293,53 +1386,21 @@ Here is a demonstration of table styling:
                     pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
                     heightLeft -= pageHeight;
                 }
-
                 pdf.save(`export_${Date.now()}.pdf`);
-                els.status.textContent = "PDF Exported";
-            } catch (e) {
-                console.error(e);
-                alert("PDF Export Failed: " + e.message);
-                els.status.textContent = "Error";
+                statusEl.textContent = "PDF Exported";
             }
-        });
+        } catch (e) {
+            console.error(e);
+            alert("Export Failed: " + e.message);
+            statusEl.textContent = "Error";
+        }
     }
 
-    // 9. Export Image (Long Image)
-    const exportImgBtn = document.getElementById('exportImgBtn');
-    if (exportImgBtn) {
-        exportImgBtn.addEventListener('click', async () => {
-            els.status.textContent = "Generating Image...";
-            try {
-                // Target the wrapper created by docx-preview or HTML container
-                const element = getCaptureElement();
-                if(!element) throw new Error("Preview content not found");
-
-                const canvas = await html2canvas(element, { 
-                    scale: 2, // High resolution
-                    backgroundColor: '#ffffff', // Ensure white background
-                    useCORS: true 
-                });
-                
-                // Download
-                const link = document.createElement('a');
-                link.download = `export_${Date.now()}.png`;
-                link.href = canvas.toDataURL("image/png");
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                els.status.textContent = "Image Exported";
-            } catch (e) {
-                console.error(e);
-                alert("Image Export Failed: " + e.message);
-                els.status.textContent = "Error";
-            }
-        });
-    }
-
-    // Mode toggle
-    els.modeToggleBtn.addEventListener('click', () => {
-        setMode(currentMode === 'html' ? 'markdown' : 'html');
-    });
+    // Bind Export Buttons
+    els.exportImgBtnMD.addEventListener('click', () => exportCapture('image', 'markdown'));
+    els.exportPdfBtnMD.addEventListener('click', () => exportCapture('pdf', 'markdown'));
+    els.exportImgBtnHTML.addEventListener('click', () => exportCapture('image', 'html'));
+    els.exportPdfBtnHTML.addEventListener('click', () => exportCapture('pdf', 'html'));
 
     // Start
     init();
