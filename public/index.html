@@ -337,7 +337,9 @@
       box-shadow: var(--shadow-paper);
       border-radius: 8px;
       color: #111827;
-      overflow: hidden; /* Contain floats and margins */
+      /* overflow: hidden; Removed to allow iframe expansion */
+      display: flex; /* Ensure iframe fills it */
+      flex-direction: column;
     }
     #htmlPreview table {
       width: 100%;
@@ -956,69 +958,8 @@ Here is a demonstration of table styling:
     }
 
     // --- Logic ---
-    function sanitizeHtml(html) {
-      if (!html) return '';
-      // Expanded allowed tags to support full HTML documents and styles
-      const allowedTags = new Set([
-        'style','body','footer','header','main','aside','article','nav','section',
-        'a','abbr','b','blockquote','br','caption','code','col','colgroup','div','em','figure','figcaption','h1','h2','h3','h4','h5','h6','hr','i','img','label','li','ol','p','pre','span','strong','sub','sup','table','tbody','td','tfoot','th','thead','tr','u','ul'
-      ]);
-      const globalAttrs = new Set(['class','id','style','title']);
-      const attrAllow = {
-        'a': ['href','target','rel'],
-        'img': ['src','alt','width','height']
-      };
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html || '', 'text/html');
-      if (!doc) return html || '';
-
-      const cleanNode = (node) => {
-        if (!node || node.nodeType !== Node.ELEMENT_NODE) return;
-        const tag = node.tagName.toLowerCase();
-        
-        // Don't remove html/head containers, but clean their contents
-        if (!allowedTags.has(tag) && tag !== 'html' && tag !== 'head') {
-          node.remove();
-          return;
-        }
-        
-        [...node.attributes].forEach(attr => {
-          const name = attr.name.toLowerCase();
-          const value = attr.value || '';
-          const allowed = (attrAllow[tag] && attrAllow[tag].includes(name)) || globalAttrs.has(name);
-          const isEvent = name.startsWith('on');
-          if (!allowed || isEvent) {
-            node.removeAttribute(attr.name);
-            return;
-          }
-          if (name === 'href' || name === 'src') {
-            const safe = value.startsWith('https://') || value.startsWith('http://') || value.startsWith('data:') || value.startsWith('#');
-            if (!safe) node.removeAttribute(attr.name);
-          }
-        });
-        
-        [...node.childNodes].forEach(child => cleanNode(child));
-      };
-      
-      cleanNode(doc.documentElement);
-      
-      // Post-process styles: Scope 'body' selectors to '#htmlPreview'
-      doc.querySelectorAll('style').forEach(s => {
-          s.textContent = s.textContent.replace(/\bbody\b/g, '#htmlPreview');
-      });
-
-      // Assemble output: Wrap body content in a div that preserves body attributes
-      let bodyOutput = '';
-      if (doc.body) {
-          const bodyProxy = document.createElement('div');
-          [...doc.body.attributes].forEach(attr => bodyProxy.setAttribute(attr.name, attr.value));
-          bodyProxy.innerHTML = doc.body.innerHTML;
-          bodyOutput = bodyProxy.outerHTML;
-      }
-
-      return (doc.head ? doc.head.innerHTML : '') + bodyOutput;
-    }
-
+    // sanitizeHtml function removed/bypassed as per request for raw browser preview
+    
     function buildConfigFromInputs() {
       const getVal = (id) => document.getElementById(id).value;
       const getNum = (id) => Number(document.getElementById(id).value) || undefined;
@@ -1201,11 +1142,51 @@ Here is a demonstration of table styling:
                   return;
               }
               try {
-                  const safeHtml = sanitizeHtml(window.htmlContent || '');
-                  container.innerHTML = safeHtml;
+                  // Direct Iframe Rendering (Raw Browser Preview)
+                  container.innerHTML = '';
+                  const iframe = document.createElement('iframe');
+                  iframe.style.width = '100%';
+                  iframe.style.border = 'none';
+                  iframe.style.display = 'block';
+                  iframe.style.minHeight = '1123px';
+                  
+                  iframe.onload = () => {
+                      try {
+                          const doc = iframe.contentDocument;
+                          if(doc && doc.body) {
+                              // Initial Resize
+                              const updateHeight = () => {
+                                  // Use scrollHeight of documentElement to catch everything
+                                  const height = Math.max(
+                                      doc.body.scrollHeight, 
+                                      doc.body.offsetHeight,
+                                      doc.documentElement.scrollHeight
+                                  );
+                                  iframe.style.height = height + 'px';
+                                  // Update container min-height to match if needed, but iframe expansion should push it.
+                              };
+                              updateHeight();
+                              
+                              // Observe changes
+                              const observer = new ResizeObserver(() => {
+                                  updateHeight();
+                              });
+                              observer.observe(doc.body);
+                              observer.observe(doc.documentElement); // Watch root as well
+                          }
+                      } catch(e) { console.warn("Resize frame failed", e); }
+                  };
+
+                  container.appendChild(iframe);
+                  
+                  const doc = iframe.contentDocument || iframe.contentWindow.document;
+                  doc.open();
+                  doc.write(window.htmlContent || '');
+                  doc.close();
+
                   if (els.statusHTML) els.statusHTML.textContent = "HTML Preview Updated";
               } catch (err) {
-                  console.error("Sanitize/Render Error:", err);
+                  console.error("Render Error:", err);
                   if (els.statusHTML) els.statusHTML.textContent = "Preview Failed: " + err.message;
               }
               return;
@@ -1494,7 +1475,15 @@ Here is a demonstration of table styling:
 
         window.getCaptureElement = function() {
 
-            if (currentMode === 'html') return els.htmlPreview;
+            if (currentMode === 'html') {
+                const iframe = els.htmlPreview.querySelector('iframe');
+                try {
+                    if (iframe && iframe.contentDocument) {
+                        return iframe.contentDocument.body; 
+                    }
+                } catch(e) {}
+                return els.htmlPreview;
+            }
 
             const docxWrapper = document.querySelector('.docx-wrapper');
 
@@ -1511,7 +1500,18 @@ Here is a demonstration of table styling:
             statusEl.textContent = "Exporting...";
 
             try {
+                // 1. Native PDF Export (Electron) - Preferred for Fidelity
+                if (type === 'pdf' && window.electronAPI) {
+                     const success = await window.electronAPI.printToPDF();
+                     if (success) {
+                         statusEl.textContent = "PDF Exported";
+                     } else {
+                         statusEl.textContent = "Export Cancelled";
+                     }
+                     return;
+                }
 
+                // 2. Fallback / Image Export (html2canvas)
                 const element = getCaptureElement();
 
                 if (!element) throw new Error("Preview content not found");
