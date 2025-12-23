@@ -8,6 +8,29 @@ A powerful, **hybrid tool (CLI & Desktop)** that converts Markdown to high-fidel
 
 一个强大的 **Markdown 转 Docx 工具（支持命令行与桌面端）**。它结合了 Node.js 的生成能力和 Python 的样式解析能力，专为生成符合**中国党政机关公文格式**及标准商务报告的文档而优化。
 
+## 🏗️ Architecture / 整体架构
+
+DocxJS Converter is built as a multi-tier system to provide flexibility across CLI, Web, and Desktop environments.
+
+DocxJS Converter 采用多层架构设计，确保在命令行、网页和桌面端均能提供一致的体验。
+
+### Core Components / 核心组件
+
+1.  **Core Engine (`lib/core.js`)**: The heart of the system. It parses Markdown and uses the `docx` library to generate OpenXML documents based on a unified `StyleConfig` object.
+    *   **核心引擎**：系统的核心，解析 Markdown 并使用 `docx` 库根据统一的 `StyleConfig` 对象生成 OpenXML 文档。
+2.  **Style Normalizer (`lib/style-normalizer.js`)**: Ensures that styles from different sources (UI, CLI, templates) are validated and converted into the internal format used by the engine.
+    *   **样式标准化器**：确保来自不同来源（UI、命令行、模板）的样式经过校验并转换为引擎使用的内部格式。
+3.  **Desktop App (`electron/`)**: A cross-platform GUI built with Electron. It provides a real-time side-by-side preview using `docx-preview` and a sandboxed `iframe` for HTML mode.
+    *   **桌面端应用**：基于 Electron 的跨平台 GUI。使用 `docx-preview` 提供实时左右对比预览，并为 HTML 模式提供沙箱化的 `iframe` 环境。
+4.  **Web Server (`server/app.js`)**: An Express-based backend that exposes the core engine via a RESTful API, enabling the same functionality in browser-only environments.
+    *   **Web 服务器**：基于 Express 的后端，通过 RESTful API 暴露核心引擎功能，使得在纯浏览器环境下也能实现相同功能。
+5.  **CLI Tools (`bin/`)**:
+    *   `docxjs`: Direct Markdown-to-Docx conversion.
+    *   `docxjs-capture`: A headless renderer using **Playwright** to capture the exact UI preview as PNG or PDF.
+    *   **命令行工具**：`docxjs` 负责直接转换；`docxjs-capture` 利用 **Playwright** 无头浏览器捕获与 UI 完全一致的预览截图或 PDF。
+6.  **Python Bridge (`style_extractor.py` & `lib/python-bridge.js`)**: Leverages Python's `python-docx` to extract styling metadata (fonts, margins) from existing Word documents, which is then fed back into the Node.js engine.
+    *   **Python 桥接**：利用 Python 的 `python-docx` 从现有 Word 文档中提取样式元数据（字体、边距），并反馈给 Node.js 引擎。
+
 ---
 
 <a name="english"></a>
