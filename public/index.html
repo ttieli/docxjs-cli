@@ -735,15 +735,23 @@
     let currentMode = 'markdown'; // 'markdown' | 'html'
     
         // Initial content
-        window.markdownContent = `# 示例文档 (一级标题)
+        window.markdownContent = `# 示例文档 (Mermaid 支持)
 
 这是文档的正文部分。此处展示了**粗体**、*斜体*以及普通文本的行距和字体效果。通过修改左侧的样式配置，您可以实时预览正文的字体、字号、颜色和行间距的变化。
 
-## 二级标题样例
-二级标题通常用于章节划分。
+## 流程图样例 (Mermaid)
+DocxJS 现在支持将 Mermaid 图表渲染为高清图片并嵌入文档。
 
-### 三级标题样例
-三级标题用于更细致的内容分组。
+\`\`\`mermaid
+graph TD
+    Start((开始)) --> Init[初始化配置]
+    Init --> Check{检查依赖}
+    Check -- 通过 --> Render[本地渲染]
+    Check -- 失败 --> Error[记录日志]
+    Render --> Docx[生成文档]
+    Error --> Stop((结束))
+    Docx --> Stop
+\`\`\`
 
 ## 列表与表格展示
 
@@ -757,33 +765,36 @@
 | 序号 | 项目名称 | 状态 | 备注 |
 | :--- | :--- | :--- | :--- |
 | 1 | 系统架构设计 | 完成 | 核心模块 |
-| 2 | 前端界面开发 | 进行中 | 样式调整 |
-| 3 | 后端接口联调 | 待开始 | API 对接 |
+| 2 | Mermaid 渲染 | 完成 | 离线支持 |
+| 3 | 后端接口联调 | 进行中 | API 对接 |
 
-# Sample Document (Level One Heading)
+# Sample Document (Mermaid Support)
 
-This is the main body of the document. It demonstrates **bold**, *italic*, and regular text with line spacing and font effects. By modifying the style configurations on the left, you can instantly preview changes to the body font, size, color, and line spacing.
+This document demonstrates **bold**, *italic*, and Mermaid diagram support.
 
-## Level Two Heading Example
-A level two heading is typically used for chapter divisions.
+## Flowchart Example
+DocxJS renders Mermaid diagrams offline as high-quality images.
 
-### Level Three Heading Example
-A level three heading is used for more detailed content grouping.
+\`\`\`mermaid
+graph LR
+    User[User] -->|Input| App[Desktop App]
+    App -->|Parse| Engine[Core Engine]
+    Engine -->|Render| Word[Docx File]
+\`\`\`
 
 ## Lists and Tables Display
 
 Below is an unordered list:
-- List Item 1: Testing indentation and alignment
+- List Item 1: Testing indentation
 - List Item 2: Testing font consistency
-- List Item 3: List item with **bold** text
 
 Here is a demonstration of table styling:
 
 | No. | Item Name | Status | Remarks |
 | :--- | :--- | :--- | :--- |
-| 1 | System Architecture Design | Completed | Core Module |
-| 2 | Frontend UI Development | In Progress | Style Adjustment |
-| 3 | Backend API Integration | To Be Started | API Docking |`;
+| 1 | System Architecture | Completed | Core Module |
+| 2 | Mermaid Support | Completed | Offline |
+| 3 | API Integration | In Progress | Connectivity |`;
         window.htmlContent = `<!DOCTYPE html>
 <html>
 <head>
