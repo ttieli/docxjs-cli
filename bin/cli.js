@@ -44,21 +44,32 @@ function loadTemplates(customConfigPath) {
 
 // --- 主逻辑 ---
 (async () => {
-    const rawArgv = yargs(hideBin(process.argv)).argv;
-    const templates = loadTemplates(rawArgv.config);
-    const availableTemplates = Object.keys(templates);
-
     const argv = yargs(hideBin(process.argv))
         .usage('Usage: $0 <input.md> -o <output.docx> [options]')
         .command('$0 <input>', 'Convert Markdown to Docx')
-        .option('output', { alias: 'o', type: 'string' })
+        .positional('input', { describe: 'Input Markdown file', type: 'string' })
+        .option('output', { alias: 'o', type: 'string', describe: 'Output Docx file path' })
         .option('template', { alias: 't', type: 'string', description: `Template name.` })
-        .option('config', { alias: 'c', type: 'string' })
-        .option('reference-doc', { alias: 'r', type: 'string' })
+        .option('config', { alias: 'c', type: 'string', description: 'Custom configuration file' })
+        .option('reference-doc', { alias: 'r', type: 'string', description: 'Reference Docx for style extraction' })
         .option('pdf', { type: 'boolean', description: 'Export as PDF using LibreOffice (soffice)' })
-        .demandCommand(1)
         .help()
-        .argv;
+        .version()
+        .parse(); // Use parse() instead of .argv to avoid premature exit issues with help
+
+    // If help or version was requested, yargs handles it and exits.
+    // If we are here, we might have arguments or not.
+    // Since we used command('$0 <input>'), yargs expects input. 
+    // However, without .demandCommand(1) strict, it might pass through.
+    // But we want to ensure input is there.
+    
+    if (!argv.input) {
+        yargs.showHelp();
+        return;
+    }
+
+    const templates = loadTemplates(argv.config);
+    const availableTemplates = Object.keys(templates);
 
     const inputPath = argv.input;
     let outputPath = argv.output;
