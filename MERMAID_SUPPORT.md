@@ -1,86 +1,61 @@
-# DocxJS 转换器 Mermaid 离线支持设计方案
+# DocxJS 转换器 Mermaid 离线支持说明 (最终版)
 
-## 🚫 当前痛点与需求
-目前的 Mermaid 支持依赖外部服务（mermaid.ink / Kroki）或 CDN 加载 JS 库，存在以下问题：
-1.  **依赖公网**：在无网或内网环境无法使用。
-2.  **隐私风险**：业务数据（流程图内容）会被发送到第三方服务器。
-3.  **稳定性**：受限于外部服务稳定性和 URL 长度限制。
-
-**目标**：实现一个**完全离线、零外部依赖**的 Mermaid 渲染方案。
+**DocxJS Converter** 现已原生支持渲染 Markdown 文件中的 **Mermaid** 图表，并将其转换为高清晰度的图片嵌入到最终的 `.docx` 文档中。
 
 ---
 
-## 🛠 离线渲染架构设计 (Offline Architecture)
+## 🛠 架构设计 (Pure Local Architecture)
 
-我们将移除所有在线 API 调用，转而使用项目内置的 Mermaid 核心库配合本地 Playwright 引擎进行渲染。
+为了确保在内网环境下的绝对安全与稳定，我们放弃了所有在线 API（如 mermaid.ink），采用了**完全本地化**的渲染架构。
 
-### 1. 核心流程改造
-
-**原流程**：
-MD 解析 -> 尝试 mermaid.ink (在线) -> 失败 -> 尝试 Kroki (在线) -> 失败 -> Playwright 加载 CDN JS (在线) -> 截图
-
-**新流程 (纯离线)**：
-MD 解析 -> **Playwright 加载本地 Mermaid 库** -> 浏览器内渲染 -> 截图 -> 嵌入 Word
-
-### 2. 关键实现步骤
-
-#### 第一步：本地化 Mermaid 库
-不再通过 CDN 加载 `mermaid.min.js`，而是将其作为静态资源打包在项目中。
-*   **操作**：下载 `mermaid.min.js` (v10.x) 到 `public/vendor/mermaid/` 或 `lib/vendor/` 目录。
-*   **优势**：确保运行时无需任何网络请求。
-
-#### 第二步：改造 `renderMermaidLocally` 函数
-修改 `lib/core.js` 中的渲染逻辑：
-1.  **读取本地文件**：使用 `fs.readFileSync` 读取本地的 `mermaid.min.js` 内容。
-2.  **注入浏览器**：在 Playwright 创建页面时，将读取到的 JS 内容直接注入 `<script>` 标签。
-3.  **执行渲染**：调用 `mermaid.initialize()` 和 `mermaid.render()` (或让其自动渲染)。
-4.  **截图**：获取 SVG 元素并截图返回 Buffer。
-
-#### 第三步：清理外部依赖
-*   删除 `mermaid.ink` 和 `kroki.io` 的相关代码。
-*   移除所有涉及 `axios` 请求外部图片服务的逻辑。
+### 核心流程
+1.  **本地库注入**：转换器直接读取内置的 `mermaid.min.js` (v10+) 脚本内容。
+2.  **无头浏览器渲染**：通过 **Playwright** 启动本地 Chrome 实例，注入脚本并执行 `mermaid.render()`。
+3.  **精准坐标截图**：
+    *   **高 DPI**：设置 `deviceScaleFactor: 3`，确保图表在打印时达到“视网膜”级清晰度。
+    *   **自动裁剪**：通过获取 SVG 元素的精确边界进行截图，**彻底消除了图片右侧的空白区域**。
+    *   **布局优化**：强制设置超大视口 (2400x2000)，防止复杂图表在渲染时因空间不足而发生元素重叠。
 
 ---
 
-## 💻 代码实现思路 (伪代码)
+## 📦 支持图表类型全清单
 
-```javascript
-// lib/core.js
+得益于内置的 Mermaid v10 核心，本工具支持以下所有图表：
 
-// 1. 引入本地 Mermaid 库路径
-const MERMAID_LIB_PATH = path.join(__dirname, '../public/vendor/mermaid/mermaid.min.js');
+### 1. 经典图表 (Stable)
+- **流程图 (Flowcharts)**：支持 `graph TD/LR`、子图及自定义样式。
+- **时序图 (Sequence Diagrams)**：支持自动编号、参与者激活/去激活。
+- **类图 (Class Diagrams)**：支持继承、成员方法及可见性标识。
+- **状态图 (State Diagrams v2)**：支持复合状态。
+- **实体关系图 (ER Diagrams)**：支持复杂的多表关联建模。
+- **甘特图 (Gantt)**：支持项目进度管理。
+- **饼图 (Pie Charts)**：支持数据占比分布。
 
-async function renderMermaidLocally(mermaidCode) {
-    // ... 启动 Playwright ...
+### 2. 现代与高级图表 (New)
+- **思维导图 (Mindmaps)**：层级化脑图。
+- **时间轴 (Timeline)**：大事件年表。
+- **用户旅程图 (User Journey)**：产品体验链路。
+- **Git 图 (GitGraph)**：版本分支模型。
+- **C4 架构图 (C4Context)**：系统上下文架构。
+- **需求图 (Requirement Diagram)**：需求建模。
 
-    // 2. 读取本地 JS
-    const mermaidJsContent = fs.readFileSync(MERMAID_LIB_PATH, 'utf-8');
+### 3. 特殊图表 (Specialized)
+- **桑基图 (Sankey)**：能量/资金流量分析。
+- **XY 图表 (XYChart)**：基础数据折线/柱状图。
+- **象限图 (Quadrant Chart)**：战略优先级分析。
 
-    // 3. 构建完全离线的 HTML
-    const htmlContent = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <style>body { margin: 0; background: white; }</style>
-        <!-- 直接注入 JS 代码，不使用 src URL -->
-        <script>${mermaidJsContent}</script>
-    </head>
-    <body>
-        <div id="container" class="mermaid">${mermaidCode}</div>
-        <script>
-            mermaid.initialize({ startOnLoad: true });
-        </script>
-    </body>
-    </html>`;
+---
 
-    // ... 设置页面内容并等待选择器 ...
-    // ... 截图并关闭浏览器 ...
-}
-```
+## 🚀 平台支持情况
 
-## ✅ 方案优势
+| 平台 | 支持状态 | 离线能力 | 截图质量 |
+| :--- | :--- | :--- | :--- |
+| **命令行 (CLI)** | ✅ 完全支持 | 100% 离线 | 3x DPI (高清) |
+| **桌面端 (App)** | ✅ 完全支持 | 100% 离线 | 3x DPI (高清) |
+| **网页 API** | ✅ 完全支持 | 100% 离线 | 3x DPI (高清) |
 
-1.  **100% 离线可用**：适用于银行、政企等内网环境。
-2.  **数据安全**：图表数据不出本地机器。
-3.  **极致稳定**：不受网络波动或第三方服务宕机影响。
-4.  **一致性**：所有平台（CLI/Web/App）使用同一套渲染内核，效果完全一致。
+---
+
+## 💡 使用建议
+- 无需任何配置，直接在 Markdown 中编写 ```mermaid 代码块即可。
+- 对于极其庞大的图表，本工具会自动将其等比例缩放到 Word A4 页面的最大宽度（约 600px），并保持清晰度。
