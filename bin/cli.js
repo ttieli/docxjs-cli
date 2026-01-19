@@ -53,6 +53,7 @@ function loadTemplates(customConfigPath) {
         .option('config', { alias: 'c', type: 'string', description: 'Custom configuration file' })
         .option('reference-doc', { alias: 'r', type: 'string', description: 'Reference Docx for style extraction' })
         .option('pdf', { type: 'boolean', description: 'Export as PDF using LibreOffice (soffice)' })
+        .option('image', { type: 'string', description: 'Export as PNG image (requires playwright)' })
         .help()
         .version()
         .parse(); // Use parse() instead of .argv to avoid premature exit issues with help
@@ -153,6 +154,17 @@ function loadTemplates(customConfigPath) {
                 console.log(`✅ PDF created: ${outputPath.replace('.docx', '.pdf')}`);
             } catch (e) {
                 console.error(`❌ PDF conversion failed. Please ensure LibreOffice (soffice) is installed and in your PATH.`);
+            }
+        }
+
+        if (argv.image) {
+            console.log('🖼️  Exporting to PNG (requires playwright)...');
+            const imagePath = argv.image.endsWith('.png') ? argv.image : `${argv.image}.png`;
+            const captureScript = path.join(__dirname, 'capture.js');
+            try {
+                execSync(`node "${captureScript}" --input "${inputPath}" --png "${imagePath}"`, { stdio: 'inherit' });
+            } catch (e) {
+                console.error(`❌ Image export failed. Please ensure playwright is installed.`);
             }
         }
 

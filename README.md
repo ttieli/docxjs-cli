@@ -87,7 +87,7 @@ curl -sSL https://raw.githubusercontent.com/ttieli/docxjs-cli/main/install_globa
 ```bash
 git clone https://github.com/ttieli/docxjs-cli.git
 cd docxjs-cli
-./install_global.sh
+./scripts/install_global.sh
 ```
 
 ```bash
@@ -96,6 +96,9 @@ npm install -g docxjs-cli
 
 # Usage
 docxjs input.md -o output.docx
+
+# Export with PNG image (requires playwright)
+docxjs input.md -o output.docx --image output.png
 
 # Capture (headless PNG/PDF, matches UI)
 docxjs-capture --input input.md --png out.png --pdf out.pdf
@@ -180,7 +183,7 @@ curl -sSL https://raw.githubusercontent.com/ttieli/docxjs-cli/main/install_globa
 ```bash
 git clone https://github.com/ttieli/docxjs-cli.git
 cd docxjs-cli
-./install_global.sh
+./scripts/install_global.sh
 ```
 
 ```bash
@@ -191,6 +194,9 @@ npm install -g docxjs-cli
 docxjs input.md -o output.docx
 # 或者仅指定输入文件（自动生成输出名）：
 docxjs input.md
+
+# 同时导出 PNG 图片（需 Playwright）
+docxjs input.md -o output.docx --image output.png
 
 # 截图导出（需 Playwright，首次会下载 Chromium）
 docxjs-capture --input input.md --png out.png --pdf out.pdf
