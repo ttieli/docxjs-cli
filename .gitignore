@@ -27,5 +27,8 @@ test_with_ref.docxrelease_assets/
 sample data/*.docx
 sample data/*.dmg
 sample data/*.exe
+sample data/test.html
 preview.docx
 downloads/
+temp/
+前端和打包.md
