@@ -53,7 +53,7 @@ function loadTemplates(customConfigPath) {
         .option('config', { alias: 'c', type: 'string', description: 'Custom configuration file' })
         .option('reference-doc', { alias: 'r', type: 'string', description: 'Reference Docx for style extraction' })
         .option('pdf', { type: 'boolean', description: 'Export as PDF using LibreOffice (soffice)' })
-        .option('image', { type: 'string', description: 'Export as PNG image (requires playwright)' })
+        .option('image', { type: 'boolean', description: 'Export as PNG image only (no docx output, requires playwright)' })
         .help()
         .version()
         .parse(); // Use parse() instead of .argv to avoid premature exit issues with help
@@ -74,16 +74,32 @@ function loadTemplates(customConfigPath) {
 
     const inputPath = argv.input;
     let outputPath = argv.output;
+    const imageOnly = argv.image && !argv.output; // --image without -o means PNG only
+
+    // Generate timestamp for auto-naming
+    const absInputPath = path.resolve(inputPath);
+    const dirname = path.dirname(absInputPath);
+    const ext = path.extname(absInputPath);
+    const basename = path.basename(absInputPath, ext);
+    const now = new Date();
+    const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}-${String(now.getSeconds()).padStart(2, '0')}`;
+
+    // If --image only (no -o), skip docx and export PNG directly
+    if (imageOnly) {
+        const imagePath = path.join(dirname, `${basename}_${timestamp}.png`);
+        console.log('🖼️  Exporting to PNG only (requires playwright)...');
+        const captureScript = path.join(__dirname, 'capture.js');
+        try {
+            execSync(`node "${captureScript}" --input "${inputPath}" --png "${imagePath}"`, { stdio: 'inherit' });
+            console.log(`✅ PNG created: ${imagePath}`);
+        } catch (e) {
+            console.error(`❌ Image export failed. Please ensure playwright is installed.`);
+            process.exit(1);
+        }
+        return;
+    }
 
     if (!outputPath) {
-        const absInputPath = path.resolve(inputPath);
-        const dirname = path.dirname(absInputPath);
-        const ext = path.extname(absInputPath);
-        const basename = path.basename(absInputPath, ext);
-        
-        const now = new Date();
-        const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}-${String(now.getSeconds()).padStart(2, '0')}`;
-        
         outputPath = path.join(dirname, `${basename}_${timestamp}.docx`);
     }
 
@@ -158,8 +174,9 @@ function loadTemplates(customConfigPath) {
         }
 
         if (argv.image) {
-            console.log('🖼️  Exporting to PNG (requires playwright)...');
-            const imagePath = argv.image.endsWith('.png') ? argv.image : `${argv.image}.png`;
+            // When both -o and --image are specified, also export PNG
+            const imagePath = outputPath.replace(/\.docx$/i, '.png');
+            console.log('🖼️  Also exporting to PNG...');
             const captureScript = path.join(__dirname, 'capture.js');
             try {
                 execSync(`node "${captureScript}" --input "${inputPath}" --png "${imagePath}"`, { stdio: 'inherit' });
