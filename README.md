@@ -2,7 +2,7 @@
 
 [中文说明](#中文说明) | [English](#english)
 
-**Current Version / 当前版本**: `1.3.9`
+**Current Version / 当前版本**: `1.3.21`
 
 A powerful, **hybrid tool (CLI & Desktop)** that converts Markdown to high-fidelity Word (.docx) documents. It combines the generation capabilities of Node.js with the style parsing capabilities of Python, specifically optimized for **Chinese Official Document formats (党政机关公文格式)** and standard business reports.
 
@@ -74,7 +74,13 @@ npm run dist:win
 
 For developers who prefer the command line:
 
-**One-line Install (Recommended):**
+**NPM Install (Recommended):**
+
+```bash
+npm install -g ttieli/docxjs-cli
+```
+
+**One-line Install (with Python environment setup):**
 
 This will automatically set up the required Python environment and install the tool globally.
 
@@ -82,22 +88,13 @@ This will automatically set up the required Python environment and install the t
 curl -sSL https://raw.githubusercontent.com/ttieli/docxjs-cli/main/install_global.sh | bash
 ```
 
-**Manual Install:**
+**Usage:**
 
 ```bash
-git clone https://github.com/ttieli/docxjs-cli.git
-cd docxjs-cli
-./scripts/install_global.sh
-```
-
-```bash
-# Global install via npm
-npm install -g docxjs-cli
-
-# Usage
+# Basic conversion
 docxjs input.md -o output.docx
 
-# Export as PNG only (no docx, requires playwright)
+# Export as PNG only (supports local images, requires playwright)
 docxjs input.md --image
 
 # Capture (headless PNG/PDF, matches UI)
@@ -170,7 +167,13 @@ npm run dist:win
 
 如果您习惯使用终端：
 
-**一键安装（推荐）:**
+**NPM 安装（推荐）:**
+
+```bash
+npm install -g ttieli/docxjs-cli
+```
+
+**一键安装（含 Python 环境配置）:**
 
 这将自动配置所需的 Python 环境并全局安装工具。
 
@@ -178,24 +181,15 @@ npm run dist:win
 curl -sSL https://raw.githubusercontent.com/ttieli/docxjs-cli/main/install_global.sh | bash
 ```
 
-**手动安装:**
+**使用方法:**
 
 ```bash
-git clone https://github.com/ttieli/docxjs-cli.git
-cd docxjs-cli
-./scripts/install_global.sh
-```
-
-```bash
-# 全局安装
-npm install -g docxjs-cli
-
 # 基础转换
 docxjs input.md -o output.docx
 # 或者仅指定输入文件（自动生成输出名）：
 docxjs input.md
 
-# 仅导出 PNG 图片（不生成 docx，需 Playwright）
+# 仅导出 PNG 图片（支持本地图片，需 Playwright）
 docxjs input.md --image
 
 # 截图导出（需 Playwright，首次会下载 Chromium）
