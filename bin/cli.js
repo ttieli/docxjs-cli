@@ -53,7 +53,7 @@ function loadTemplates(customConfigPath) {
         .option('config', { alias: 'c', type: 'string', description: 'Custom configuration file' })
         .option('reference-doc', { alias: 'r', type: 'string', description: 'Reference Docx for style extraction' })
         .option('pdf', { type: 'boolean', description: 'Export as PDF using LibreOffice (soffice)' })
-        .option('image', { type: 'boolean', description: 'Export as PNG image only (no docx output, requires playwright)' })
+        .option('image', { type: 'boolean', description: 'Export as PNG image only (supports local images, requires playwright)' })
         .help()
         .version()
         .parse(); // Use parse() instead of .argv to avoid premature exit issues with help
