@@ -17,6 +17,25 @@ const http = require('http');
 const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
 let chromium;
+
+// Simple MIME type lookup for common image formats
+const MIME_TYPES = {
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.gif': 'image/gif',
+    '.webp': 'image/webp',
+    '.svg': 'image/svg+xml',
+    '.bmp': 'image/bmp',
+    '.ico': 'image/x-icon',
+    '.tiff': 'image/tiff',
+    '.tif': 'image/tiff'
+};
+
+function getMimeType(filePath) {
+    const ext = path.extname(filePath).toLowerCase();
+    return MIME_TYPES[ext] || 'image/png';
+}
 try {
     ({ chromium } = require('playwright'));
 } catch (err) {
@@ -25,6 +44,80 @@ try {
 }
 
 const ROOT = path.join(__dirname, '..');
+
+/**
+ * Convert local image paths in markdown to base64 data URIs
+ * @param {string} content - Markdown content
+ * @param {string} baseDir - Base directory of the markdown file
+ * @returns {string} - Markdown with local images converted to base64
+ */
+function convertLocalImagesToBase64(content, baseDir) {
+    // Match markdown image syntax: ![alt](path) and HTML img tags
+    const mdImageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
+    const htmlImageRegex = /<img\s+[^>]*src=["']([^"']+)["'][^>]*>/gi;
+
+    let result = content;
+
+    // Process markdown images
+    result = result.replace(mdImageRegex, (match, alt, imagePath) => {
+        const base64Data = getImageAsBase64(imagePath, baseDir);
+        if (base64Data) {
+            return `![${alt}](${base64Data})`;
+        }
+        return match; // Return original if conversion failed
+    });
+
+    // Process HTML img tags
+    result = result.replace(htmlImageRegex, (match, imagePath) => {
+        const base64Data = getImageAsBase64(imagePath, baseDir);
+        if (base64Data) {
+            return match.replace(imagePath, base64Data);
+        }
+        return match;
+    });
+
+    return result;
+}
+
+/**
+ * Convert a single image path to base64 data URI
+ * @param {string} imagePath - Image path (relative or absolute)
+ * @param {string} baseDir - Base directory for resolving relative paths
+ * @returns {string|null} - Base64 data URI or null if not a local file
+ */
+function getImageAsBase64(imagePath, baseDir) {
+    // Skip URLs (http, https, data URIs)
+    if (/^(https?:|data:)/i.test(imagePath)) {
+        return null;
+    }
+
+    // Decode URL-encoded path (e.g., %20 -> space)
+    let decodedPath = decodeURIComponent(imagePath);
+
+    // Resolve relative paths
+    let absolutePath;
+    if (path.isAbsolute(decodedPath)) {
+        absolutePath = decodedPath;
+    } else {
+        absolutePath = path.resolve(baseDir, decodedPath);
+    }
+
+    // Check if file exists
+    if (!fs.existsSync(absolutePath)) {
+        console.warn(`⚠️  Image not found: ${absolutePath}`);
+        return null;
+    }
+
+    try {
+        const imageBuffer = fs.readFileSync(absolutePath);
+        const mimeType = getMimeType(absolutePath);
+        const base64 = imageBuffer.toString('base64');
+        return `data:${mimeType};base64,${base64}`;
+    } catch (err) {
+        console.warn(`⚠️  Failed to read image: ${absolutePath} - ${err.message}`);
+        return null;
+    }
+}
 
 function waitForServer(port, timeoutMs = 15000) {
     const start = Date.now();
@@ -58,17 +151,45 @@ async function capturePage({ url, mode, content, pngPath, pdfPath }) {
     const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
     await page.goto(url, { waitUntil: 'networkidle' });
 
-    // Inject content and switch mode
+    // Wait for initial page load and initial preview to complete
     await page.waitForSelector('#paper-container', { timeout: 10000 });
+
+    // Wait for the initial preview to complete (status text changes from "Updating Preview..." to "Preview Updated")
+    try {
+        await page.waitForFunction(() => {
+            const status = document.getElementById('statusText');
+            return status && status.textContent === 'Preview Updated';
+        }, { timeout: 30000 });
+    } catch (e) {
+        console.warn('Initial preview wait timed out, continuing...');
+    }
+
+    // Clear existing content, inject new content and trigger preview
     await page.evaluate(({ mode, content }) => {
         if (mode === 'html') {
             if (typeof setMode === 'function') setMode('html');
+            // Clear existing preview
+            const htmlPreview = document.getElementById('htmlPreview');
+            if (htmlPreview) htmlPreview.innerHTML = '';
+
+            // Update status to indicate loading
+            const statusHTML = document.getElementById('statusTextHTML');
+            if (statusHTML) statusHTML.textContent = 'Loading...';
+
             if (typeof window !== 'undefined') {
                 window.htmlContent = content;
             }
             if (typeof triggerPreview === 'function') triggerPreview();
         } else {
             if (typeof setMode === 'function') setMode('markdown');
+            // Clear existing preview to ensure we wait for new content
+            const paper = document.getElementById('paper-container');
+            if (paper) paper.innerHTML = '';
+
+            // Update status to indicate loading
+            const status = document.getElementById('statusText');
+            if (status) status.textContent = 'Loading...';
+
             if (typeof window !== 'undefined') {
                 window.markdownContent = content;
             }
@@ -76,12 +197,30 @@ async function capturePage({ url, mode, content, pngPath, pdfPath }) {
         }
     }, { mode, content });
 
-    // Wait for render target
+    // Wait for the debounce timer (600ms) plus rendering time
+    // triggerPreview has a 600ms debounce, so we need to wait for it
+    await page.waitForTimeout(1000);
+
+    // Wait for render target to appear (after clearing it above)
     if (mode === 'html') {
-        await page.waitForSelector('#htmlPreview', { state: 'visible', timeout: 10000 });
+        await page.waitForSelector('#htmlPreview iframe', { state: 'visible', timeout: 60000 });
     } else {
-        await page.waitForSelector('.docx-wrapper section.docx, #paper-container section.docx', { timeout: 15000 });
+        // Wait for status text to indicate preview is complete
+        try {
+            await page.waitForFunction(() => {
+                const status = document.getElementById('statusText');
+                return status && (status.textContent === 'Preview Updated' || status.textContent.includes('Error'));
+            }, { timeout: 60000 });
+        } catch (e) {
+            console.warn('Status check timed out, continuing...');
+        }
+
+        // Then wait for the docx content to be rendered
+        await page.waitForSelector('.docx-wrapper section.docx, #paper-container section.docx', { timeout: 60000 });
     }
+
+    // Additional wait to ensure content is fully rendered
+    await page.waitForTimeout(1000);
 
     // Helper run html2canvas/jsPDF inside page and return base64
     const captureElement = async (type) => {
@@ -158,7 +297,11 @@ async function capturePage({ url, mode, content, pngPath, pdfPath }) {
     }
     const ext = path.extname(inputPath).toLowerCase();
     const mode = argv.mode || ((ext === '.html' || ext === '.htm') ? 'html' : 'markdown');
-    const content = fs.readFileSync(inputPath, 'utf-8');
+    const baseDir = path.dirname(inputPath);
+    let content = fs.readFileSync(inputPath, 'utf-8');
+
+    // Convert local images to base64 data URIs
+    content = convertLocalImagesToBase64(content, baseDir);
 
     const port = argv.port;
     let serverProc;
