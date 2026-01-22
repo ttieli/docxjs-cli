@@ -147,8 +147,11 @@ async function startServer(port) {
 }
 
 async function capturePage({ url, mode, content, pngPath, pdfPath }) {
+    console.log('   [1/6] Launching browser...');
     const browser = await chromium.launch({ headless: true });
     const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+
+    console.log('   [2/6] Loading preview page...');
     await page.goto(url, { waitUntil: 'networkidle' });
 
     // Wait for initial page load and initial preview to complete
@@ -161,9 +164,10 @@ async function capturePage({ url, mode, content, pngPath, pdfPath }) {
             return status && status.textContent === 'Preview Updated';
         }, { timeout: 30000 });
     } catch (e) {
-        console.warn('Initial preview wait timed out, continuing...');
+        // Initial preview timeout is fine, we'll inject our content anyway
     }
 
+    console.log('   [3/6] Injecting content...');
     // Clear existing content, inject new content and trigger preview
     await page.evaluate(({ mode, content }) => {
         if (mode === 'html') {
@@ -201,24 +205,47 @@ async function capturePage({ url, mode, content, pngPath, pdfPath }) {
     // triggerPreview has a 600ms debounce, so we need to wait for it
     await page.waitForTimeout(1000);
 
+    console.log('   [4/6] Generating preview (this may take a while for large documents)...');
     // Wait for render target to appear (after clearing it above)
     if (mode === 'html') {
-        await page.waitForSelector('#htmlPreview iframe', { state: 'visible', timeout: 60000 });
+        await page.waitForSelector('#htmlPreview iframe', { state: 'visible', timeout: 120000 });
     } else {
-        // Wait for status text to indicate preview is complete
-        try {
-            await page.waitForFunction(() => {
-                const status = document.getElementById('statusText');
-                return status && (status.textContent === 'Preview Updated' || status.textContent.includes('Error'));
-            }, { timeout: 60000 });
-        } catch (e) {
-            console.warn('Status check timed out, continuing...');
+        // Wait for status text to indicate preview is complete with progress polling
+        const startTime = Date.now();
+        const maxWait = 120000; // 2 minutes max
+        let lastStatus = '';
+
+        while (Date.now() - startTime < maxWait) {
+            const status = await page.evaluate(() => {
+                const el = document.getElementById('statusText');
+                return el ? el.textContent : '';
+            });
+
+            if (status !== lastStatus) {
+                if (status && status !== 'Loading...') {
+                    // Show status updates
+                    process.stdout.write(`\r   [4/6] ${status}...                    `);
+                }
+                lastStatus = status;
+            }
+
+            if (status === 'Preview Updated' || status.includes('Error')) {
+                process.stdout.write('\n');
+                break;
+            }
+
+            await page.waitForTimeout(500);
         }
 
         // Then wait for the docx content to be rendered
-        await page.waitForSelector('.docx-wrapper section.docx, #paper-container section.docx', { timeout: 60000 });
+        try {
+            await page.waitForSelector('.docx-wrapper section.docx, #paper-container section.docx', { timeout: 30000 });
+        } catch (e) {
+            console.log('   ⚠️  Content selector timeout, attempting capture anyway...');
+        }
     }
 
+    console.log('   [5/6] Rendering complete, capturing image...');
     // Additional wait to ensure content is fully rendered
     await page.waitForTimeout(1000);
 
@@ -273,6 +300,7 @@ async function capturePage({ url, mode, content, pngPath, pdfPath }) {
         console.log(`✅ PDF exported to ${pdfPath}`);
     }
 
+    console.log('   [6/6] Cleaning up...');
     await browser.close();
 }
 
