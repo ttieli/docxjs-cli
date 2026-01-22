@@ -2,11 +2,23 @@
 
 [中文说明](#中文说明) | [English](#english)
 
-**Current Version / 当前版本**: `1.3.21`
+**Current Version / 当前版本**: `1.3.24`
 
 A powerful, **hybrid tool (CLI & Desktop)** that converts Markdown to high-fidelity Word (.docx) documents. It combines the generation capabilities of Node.js with the style parsing capabilities of Python, specifically optimized for **Chinese Official Document formats (党政机关公文格式)** and standard business reports.
 
 一个强大的 **Markdown 转 Docx 工具（支持命令行与桌面端）**。它结合了 Node.js 的生成能力和 Python 的样式解析能力，专为生成符合**中国党政机关公文格式**及标准商务报告的文档而优化。
+
+### 🆕 Latest Updates (v1.3.24) / 最新更新
+
+- **HTML Table Support**: Full support for HTML `<table>` with `rowspan`/`colspan` cell merging
+- **Math Formula Sizing**: Consistent font sizing across inline and block math formulas (KaTeX)
+- **Mermaid Diagram Scaling**: Auto-fit diagrams to page size (no more overflow)
+- **Code Block Formatting**: Proper indentation, borders, and monospace font display
+
+- **HTML 表格支持**：完整支持 HTML `<table>` 的 `rowspan`/`colspan` 单元格合并
+- **数学公式尺寸**：行内和块级公式字体大小一致（KaTeX 渲染）
+- **Mermaid 图表缩放**：自动适配页面大小，不再超出页面
+- **代码块格式化**：正确的缩进、边框和等宽字体显示
 
 ## 🏗️ Architecture / 整体架构
 
