@@ -45,15 +45,15 @@ function loadTemplates(customConfigPath) {
 // --- 主逻辑 ---
 (async () => {
     const argv = yargs(hideBin(process.argv))
-        .usage('Usage: $0 <input.md> -o <output.docx> [options]')
-        .command('$0 <input>', 'Convert Markdown to Docx')
+        .usage('Usage: $0 <input> -o <output.docx> [options]')
+        .command('$0 <input>', 'Convert Markdown to Docx (or PDF to PNG with --image)')
         .positional('input', { describe: 'Input Markdown file', type: 'string' })
         .option('output', { alias: 'o', type: 'string', describe: 'Output Docx file path' })
         .option('template', { alias: 't', type: 'string', description: `Template name.` })
         .option('config', { alias: 'c', type: 'string', description: 'Custom configuration file' })
         .option('reference-doc', { alias: 'r', type: 'string', description: 'Reference Docx for style extraction' })
         .option('pdf', { type: 'boolean', description: 'Export as PDF using LibreOffice (soffice)' })
-        .option('image', { type: 'boolean', description: 'Export as PNG image only (supports local images, requires playwright)' })
+        .option('image', { type: 'boolean', description: 'Export as PNG image (supports MD/PDF, requires playwright)' })
         .help()
         .version()
         .parse(); // Use parse() instead of .argv to avoid premature exit issues with help
@@ -83,6 +83,35 @@ function loadTemplates(customConfigPath) {
     const basename = path.basename(absInputPath, ext);
     const now = new Date();
     const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}-${String(now.getSeconds()).padStart(2, '0')}`;
+
+    // --- PDF 文件特殊处理 ---
+    const inputExt = ext.toLowerCase();
+
+    if (inputExt === '.pdf') {
+        if (argv.image) {
+            // PDF → 长图
+            const { pdfToImage } = require('../lib/pdf-to-image');
+            const imagePath = argv.output
+                ? argv.output.replace(/\.\w+$/, '.png')
+                : path.join(dirname, `${basename}_${timestamp}.png`);
+
+            console.log('🖼️  Converting PDF to PNG...');
+            try {
+                await pdfToImage(absInputPath, imagePath);
+                console.log(`✅ PNG created: ${imagePath}`);
+            } catch (e) {
+                console.error(`❌ PDF to image failed: ${e.message}`);
+                process.exit(1);
+            }
+            return;
+        } else {
+            // PDF 不支持直接转 Docx
+            console.error('❌ PDF 文件不支持直接转换为 Docx。');
+            console.error('   请使用 --image 选项导出为长图：');
+            console.error(`   docxjs "${inputPath}" --image`);
+            process.exit(1);
+        }
+    }
 
     // If --image only (no -o), skip docx and export PNG directly
     if (imageOnly) {
