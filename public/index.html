@@ -457,12 +457,70 @@
       background: rgba(0,0,0,0.4);
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 16px;
+      justify-content: space-between;
+      padding: 0 16px;
       color: white;
       font-size: 12px;
       backdrop-filter: blur(4px);
       flex-shrink: 0;
+    }
+
+    .zoom-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .zoom-btn {
+      width: 24px;
+      height: 24px;
+      border: none;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.15);
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+
+    .zoom-btn:hover {
+      background: rgba(255,255,255,0.25);
+    }
+
+    .zoom-btn:active {
+      background: rgba(255,255,255,0.35);
+    }
+
+    .zoom-display {
+      min-width: 45px;
+      text-align: center;
+      font-weight: 500;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+
+    .zoom-display:hover {
+      background: rgba(255,255,255,0.15);
+    }
+
+    @media (max-width: 599px) {
+      .zoom-controls {
+        gap: 4px;
+      }
+      .zoom-btn {
+        width: 22px;
+        height: 22px;
+        font-size: 12px;
+      }
+      .zoom-display {
+        min-width: 40px;
+        font-size: 11px;
+      }
     }
 
     .canvas-scroll {
@@ -865,6 +923,11 @@
 
       <div class="preview-toolbar">
         <span id="statusText">Ready</span>
+        <div class="zoom-controls">
+          <button class="zoom-btn" id="zoomOutBtnMD" title="缩小">−</button>
+          <span class="zoom-display" id="zoomDisplayMD" title="点击重置为 100%">100%</span>
+          <button class="zoom-btn" id="zoomInBtnMD" title="放大">+</button>
+        </div>
       </div>
       
       <div class="canvas-scroll" id="previewContainerMD">
@@ -889,6 +952,11 @@
       
       <div class="preview-toolbar">
          <span id="statusTextHTML">Ready</span>
+         <div class="zoom-controls">
+           <button class="zoom-btn" id="zoomOutBtnHTML" title="缩小">−</button>
+           <span class="zoom-display" id="zoomDisplayHTML" title="点击重置为 100%">100%</span>
+           <button class="zoom-btn" id="zoomInBtnHTML" title="放大">+</button>
+         </div>
       </div>
 
       <div class="canvas-scroll" id="previewContainerHTML">
@@ -1115,10 +1183,32 @@ Here is a demonstration of table styling:
 
     sidebarOverlay.addEventListener('click', closeSidebar);
 
-    // --- Auto-scale Preview ---
+    // --- Zoom & Scale Preview ---
     const A4_WIDTH_PX = 793; // 210mm in pixels at 96dpi
     const previewContainerMD = document.getElementById('previewContainerMD');
     const previewContainerHTML = document.getElementById('previewContainerHTML');
+
+    // Zoom state
+    let currentZoomMD = 1.0;  // Manual zoom factor for Markdown
+    let currentZoomHTML = 1.0; // Manual zoom factor for HTML
+    const ZOOM_STEP = 0.1;
+    const ZOOM_MIN = 0.25;
+    const ZOOM_MAX = 2.0;
+
+    function updateZoomDisplay(mode) {
+      if (mode === 'markdown' || mode === 'both') {
+        const displayMD = document.getElementById('zoomDisplayMD');
+        if (displayMD) {
+          displayMD.textContent = Math.round(currentZoomMD * 100) + '%';
+        }
+      }
+      if (mode === 'html' || mode === 'both') {
+        const displayHTML = document.getElementById('zoomDisplayHTML');
+        if (displayHTML) {
+          displayHTML.textContent = Math.round(currentZoomHTML * 100) + '%';
+        }
+      }
+    }
 
     function updatePreviewScale() {
       const paperContainer = document.getElementById('paper-container');
@@ -1127,28 +1217,73 @@ Here is a demonstration of table styling:
       // For Markdown preview
       if (previewContainerMD && paperContainer) {
         const availableWidth = previewContainerMD.clientWidth - 48; // minus padding
+        // Calculate auto-fit scale if needed
+        let autoScale = 1.0;
         if (availableWidth < A4_WIDTH_PX && availableWidth > 100) {
-          const scale = Math.max(0.35, availableWidth / A4_WIDTH_PX);
-          paperContainer.style.transform = `scale(${scale.toFixed(3)})`;
-          paperContainer.style.transformOrigin = 'top center';
-          // Adjust container to account for scaled height
-          previewContainerMD.style.alignItems = 'flex-start';
-        } else {
-          paperContainer.style.transform = '';
-          paperContainer.style.transformOrigin = '';
-          previewContainerMD.style.alignItems = '';
+          autoScale = availableWidth / A4_WIDTH_PX;
+        }
+
+        // Apply both auto-scale and manual zoom
+        const finalScale = Math.max(0.25, autoScale * currentZoomMD);
+        paperContainer.style.transform = `scale(${finalScale.toFixed(3)})`;
+        paperContainer.style.transformOrigin = 'top center';
+        previewContainerMD.style.alignItems = 'flex-start';
+
+        // Update display to show final scale
+        const displayMD = document.getElementById('zoomDisplayMD');
+        if (displayMD) {
+          displayMD.textContent = Math.round(finalScale * 100) + '%';
         }
       }
 
       // For HTML preview
       if (previewContainerHTML && htmlPreview) {
         const availableWidth = previewContainerHTML.clientWidth - 24;
+        // Calculate base width
+        let baseWidth = 900;
         if (availableWidth < 900 && availableWidth > 100) {
-          htmlPreview.style.width = availableWidth + 'px';
-        } else {
-          htmlPreview.style.width = '900px';
+          baseWidth = availableWidth;
+        }
+
+        // Apply zoom via transform for HTML
+        const finalScale = currentZoomHTML;
+        htmlPreview.style.width = baseWidth + 'px';
+        htmlPreview.style.transform = `scale(${finalScale.toFixed(3)})`;
+        htmlPreview.style.transformOrigin = 'top center';
+
+        // Update display
+        const displayHTML = document.getElementById('zoomDisplayHTML');
+        if (displayHTML) {
+          displayHTML.textContent = Math.round(finalScale * 100) + '%';
         }
       }
+    }
+
+    function zoomIn(mode) {
+      if (mode === 'markdown') {
+        currentZoomMD = Math.min(ZOOM_MAX, currentZoomMD + ZOOM_STEP);
+      } else {
+        currentZoomHTML = Math.min(ZOOM_MAX, currentZoomHTML + ZOOM_STEP);
+      }
+      updatePreviewScale();
+    }
+
+    function zoomOut(mode) {
+      if (mode === 'markdown') {
+        currentZoomMD = Math.max(ZOOM_MIN, currentZoomMD - ZOOM_STEP);
+      } else {
+        currentZoomHTML = Math.max(ZOOM_MIN, currentZoomHTML - ZOOM_STEP);
+      }
+      updatePreviewScale();
+    }
+
+    function resetZoom(mode) {
+      if (mode === 'markdown') {
+        currentZoomMD = 1.0;
+      } else {
+        currentZoomHTML = 1.0;
+      }
+      updatePreviewScale();
     }
 
     // Close sidebar on window resize if going to larger screen
@@ -1158,6 +1293,15 @@ Here is a demonstration of table styling:
       }
       updatePreviewScale();
     });
+
+    // Zoom button event listeners
+    document.getElementById('zoomInBtnMD').addEventListener('click', () => zoomIn('markdown'));
+    document.getElementById('zoomOutBtnMD').addEventListener('click', () => zoomOut('markdown'));
+    document.getElementById('zoomDisplayMD').addEventListener('click', () => resetZoom('markdown'));
+
+    document.getElementById('zoomInBtnHTML').addEventListener('click', () => zoomIn('html'));
+    document.getElementById('zoomOutBtnHTML').addEventListener('click', () => zoomOut('html'));
+    document.getElementById('zoomDisplayHTML').addEventListener('click', () => resetZoom('html'));
 
     // Initial scale calculation
     setTimeout(updatePreviewScale, 100);
