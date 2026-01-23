@@ -2,23 +2,21 @@
 
 [中文说明](#中文说明) | [English](#english)
 
-**Current Version / 当前版本**: `1.3.24`
+**Current Version / 当前版本**: `1.3.25`
 
 A powerful, **hybrid tool (CLI & Desktop)** that converts Markdown to high-fidelity Word (.docx) documents. It combines the generation capabilities of Node.js with the style parsing capabilities of Python, specifically optimized for **Chinese Official Document formats (党政机关公文格式)** and standard business reports.
 
 一个强大的 **Markdown 转 Docx 工具（支持命令行与桌面端）**。它结合了 Node.js 的生成能力和 Python 的样式解析能力，专为生成符合**中国党政机关公文格式**及标准商务报告的文档而优化。
 
-### 🆕 Latest Updates (v1.3.24) / 最新更新
+### 🆕 Latest Updates (v1.3.25) / 最新更新
 
-- **HTML Table Support**: Full support for HTML `<table>` with `rowspan`/`colspan` cell merging
-- **Math Formula Sizing**: Consistent font sizing across inline and block math formulas (KaTeX)
-- **Mermaid Diagram Scaling**: Auto-fit diagrams to page size (no more overflow)
-- **Code Block Formatting**: Proper indentation, borders, and monospace font display
+- **Responsive Layout**: Full support for half-screen and quarter-screen window sizes on Mac with auto-scaling preview
+- **PDF to PNG**: Convert PDF files to long images via `docxjs file.pdf --image`
+- **Improved UI**: Buttons auto-hide text on narrow screens, sidebar becomes drawer on mobile widths
 
-- **HTML 表格支持**：完整支持 HTML `<table>` 的 `rowspan`/`colspan` 单元格合并
-- **数学公式尺寸**：行内和块级公式字体大小一致（KaTeX 渲染）
-- **Mermaid 图表缩放**：自动适配页面大小，不再超出页面
-- **代码块格式化**：正确的缩进、边框和等宽字体显示
+- **响应式布局**：完整支持 Mac 半屏/四分之一屏使用，预览自动缩放适配窗口
+- **PDF 转长图**：支持 `docxjs file.pdf --image` 将 PDF 转换为长图
+- **优化界面**：窄屏时按钮自动隐藏文字，小屏时侧边栏变为抽屉模式
 
 ## 🏗️ Architecture / 整体架构
 

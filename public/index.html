@@ -21,11 +21,27 @@
       --text-main: #1F2937;
       --text-sub: #6B7280;
       --border: #E5E7EB;
-      --sidebar-width: 380px;
-      --header-height: 56px;
-      
+      --sidebar-width: 340px;
+      --header-height: 48px;
+
       --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
       --shadow-paper: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Responsive: Medium screens */
+    @media (max-width: 899px) {
+      :root {
+        --sidebar-width: 280px;
+        --header-height: 44px;
+      }
+    }
+
+    /* Responsive: Small screens - sidebar collapses */
+    @media (max-width: 599px) {
+      :root {
+        --sidebar-width: 0px;
+        --header-height: 40px;
+      }
     }
 
     * { box-sizing: border-box; }
@@ -68,9 +84,26 @@
       padding: 0 20px;
       z-index: 10;
     }
-    
+
+    @media (max-width: 599px) {
+      header {
+        padding: 0 12px;
+      }
+    }
+
     .brand { font-weight: 600; font-size: 18px; display: flex; align-items: center; gap: 8px; }
     .brand svg { color: var(--primary); }
+
+    @media (max-width: 599px) {
+      .brand {
+        font-size: 15px;
+        gap: 6px;
+      }
+      .brand svg {
+        width: 20px;
+        height: 20px;
+      }
+    }
 
     /* Main Tabs */
     .main-tabs {
@@ -81,6 +114,14 @@
         gap: 20px;
         flex-shrink: 0;
     }
+
+    @media (max-width: 599px) {
+      .main-tabs {
+        padding: 0 12px;
+        gap: 12px;
+      }
+    }
+
     .tab-item {
         padding: 12px 0;
         font-size: 14px;
@@ -90,6 +131,14 @@
         border-bottom: 2px solid transparent;
         transition: all 0.2s;
     }
+
+    @media (max-width: 599px) {
+      .tab-item {
+        padding: 10px 0;
+        font-size: 13px;
+      }
+    }
+
     .tab-item:hover { color: var(--primary); }
     .tab-item.active {
         color: var(--primary);
@@ -121,27 +170,110 @@
     }
     .btn-primary:hover { background: var(--primary-hover); }
 
+    /* Button text hide on medium/small screens */
+    .btn .btn-text {
+      display: inline;
+    }
+    @media (max-width: 1099px) {
+      .btn .btn-text {
+        display: none;
+      }
+      .btn {
+        padding: 0 10px;
+        min-width: 36px;
+        justify-content: center;
+      }
+    }
+
     /* Layout Containers */
     .view-container {
       display: flex;
       flex: 1;
       overflow: hidden;
+      min-width: 0;  /* Allow flex shrink below content width */
+      width: 100%;
       /* Height handled by flex parent (body) */
     }
 
     /* Sidebar */
     aside {
       width: var(--sidebar-width);
+      min-width: var(--sidebar-width);
       background: var(--bg-panel);
       border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
+      transition: width 0.3s ease, min-width 0.3s ease, transform 0.3s ease;
+      overflow: hidden;
+    }
+
+    /* Sidebar Toggle Button */
+    .sidebar-toggle {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      z-index: 200;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      font-size: 18px;
+      align-items: center;
+      justify-content: center;
+    }
+    .sidebar-toggle:hover {
+      background: var(--primary-hover);
+    }
+
+    /* Small screen: sidebar as overlay drawer */
+    @media (max-width: 599px) {
+      aside {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 300px;
+        min-width: 300px;
+        z-index: 150;
+        transform: translateX(-100%);
+        box-shadow: 4px 0 20px rgba(0,0,0,0.15);
+      }
+      aside.open {
+        transform: translateX(0);
+      }
+      .sidebar-toggle {
+        display: flex;
+      }
+      .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.4);
+        z-index: 140;
+      }
+      .sidebar-overlay.visible {
+        display: block;
+      }
     }
 
     .scroll-container {
       flex: 1;
       overflow-y: auto;
       padding: 20px;
+    }
+
+    @media (max-width: 899px) {
+      .scroll-container {
+        padding: 16px;
+      }
     }
 
     /* Form Controls */
@@ -178,6 +310,15 @@
       background: var(--bg-input);
       transition: border-color 0.2s;
     }
+
+    @media (max-width: 899px) {
+      input[type="text"], input[type="number"], select, textarea {
+        height: 32px;
+        font-size: 12px;
+        padding: 0 8px;
+      }
+    }
+
     input:focus, select:focus, textarea:focus {
       outline: none;
       border-color: var(--primary);
@@ -209,9 +350,20 @@
     
     .details-content { padding: 16px; }
 
+    @media (max-width: 899px) {
+      .details-content {
+        padding: 12px;
+      }
+    }
+
     /* Grid for Inputs */
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+
+    @media (max-width: 899px) {
+      .grid-2 { gap: 8px; }
+      .grid-4 { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+    }
 
     /* Color Picker */
     .color-wrapper {
@@ -230,9 +382,10 @@
     }
 
     /* Tabs (Sidebar) */
-    .tabs { display: flex; gap: 4px; background: var(--bg-input); padding: 4px; border-radius: 8px; margin-bottom: 16px; }
+    .tabs { display: flex; gap: 4px; background: var(--bg-input); padding: 4px; border-radius: 8px; margin-bottom: 16px; overflow-x: auto; }
     .tab {
       flex: 1;
+      min-width: fit-content;
       text-align: center;
       padding: 6px;
       font-size: 12px;
@@ -240,35 +393,63 @@
       border-radius: 6px;
       cursor: pointer;
       color: var(--text-sub);
+      white-space: nowrap;
     }
     .tab.active { background: white; color: var(--primary); box-shadow: var(--shadow-sm); }
+
+    @media (max-width: 899px) {
+      .tabs {
+        margin-bottom: 12px;
+      }
+      .tab {
+        padding: 5px 8px;
+        font-size: 11px;
+      }
+    }
 
     /* Preview Stage */
     main.preview-stage {
       flex: 1;
+      min-width: 0;  /* Critical: Allow flex shrink below content width */
       background: #525659;
       position: relative;
       display: flex;
       flex-direction: column;
+      overflow: hidden;
     }
 
     .action-bar {
-        height: 48px;
+        min-height: 44px;
         background: white;
         border-bottom: 1px solid var(--border);
         display: flex;
         align-items: center;
-        padding: 0 16px;
-        gap: 12px;
-        justify-content: flex-end; /* Right align buttons */
+        padding: 6px 12px;
+        gap: 6px;
+        justify-content: flex-end;
+        flex-shrink: 0;
+        flex-wrap: wrap;
+        overflow: visible;
+    }
+
+    .action-bar .btn {
         flex-shrink: 0;
     }
-    
+
     .toolbar-title {
         margin-right: auto;
         font-weight: 600;
-        font-size: 14px;
+        font-size: 13px;
         color: var(--text-main);
+        white-space: nowrap;
+    }
+
+    @media (max-width: 699px) {
+      .toolbar-title {
+        width: 100%;
+        font-size: 12px;
+        margin-bottom: 2px;
+      }
     }
 
     .preview-toolbar {
@@ -292,11 +473,24 @@
       padding: 40px;
     }
 
+    @media (max-width: 899px) {
+      .canvas-scroll {
+        padding: 20px;
+      }
+    }
+
+    @media (max-width: 599px) {
+      .canvas-scroll {
+        padding: 12px;
+      }
+    }
+
     #paper-container {
       background: transparent;
       box-shadow: none;
       min-height: 297mm; /* A4 Height */
       width: 210mm;      /* A4 Width */
+      max-width: 100%;   /* Responsive constraint */
       transform-origin: top center;
       transition: transform 0.2s ease;
       display: flex;
@@ -331,6 +525,7 @@
     #htmlPreview {
       background: white;
       width: 900px; /* Expanded for document-style layouts */
+      max-width: 100%;
       min-height: 1123px;
       margin: 0 auto;
       padding: 0; /* Let document content handle padding */
@@ -340,6 +535,14 @@
       /* overflow: hidden; Removed to allow iframe expansion */
       display: flex; /* Ensure iframe fills it */
       flex-direction: column;
+    }
+
+    @media (max-width: 599px) {
+      #htmlPreview {
+        width: 100%;
+        min-height: auto;
+        border-radius: 4px;
+      }
     }
     #htmlPreview table {
       width: 100%;
@@ -367,6 +570,11 @@
   </style>
 </head>
 <body>
+  <!-- Sidebar Overlay (for mobile drawer) -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- Sidebar Toggle Button (mobile only) -->
+  <button class="sidebar-toggle" id="sidebarToggle" title="样式设置">⚙️</button>
 
   <header>
     <div class="brand">
@@ -645,14 +853,14 @@
       <!-- Markdown Action Bar -->
       <div class="action-bar">
          <span class="toolbar-title">Markdown Preview</span>
-         <label for="headerFileInput" class="btn" style="cursor:pointer;">
-           📄 导入文件
+         <label for="headerFileInput" class="btn" style="cursor:pointer;" title="导入文件">
+           📄 <span class="btn-text">导入</span>
            <input id="headerFileInput" type="file" accept=".md,.txt,.docx" style="display:none;">
          </label>
-         <button class="btn" id="editMdBtn">📝 编辑内容</button>
-         <button class="btn" id="exportImgBtnMD">🖼 导出长图</button>
-         <button class="btn" id="exportPdfBtnMD">📄 导出 PDF</button>
-         <button class="btn btn-primary" id="downloadBtn">⬇ 导出 Docx</button>
+         <button class="btn" id="editMdBtn" title="编辑内容">📝 <span class="btn-text">编辑</span></button>
+         <button class="btn" id="exportImgBtnMD" title="导出长图">🖼 <span class="btn-text">长图</span></button>
+         <button class="btn" id="exportPdfBtnMD" title="导出 PDF">📄 <span class="btn-text">PDF</span></button>
+         <button class="btn btn-primary" id="downloadBtn" title="导出 Docx">⬇ <span class="btn-text">Docx</span></button>
       </div>
 
       <div class="preview-toolbar">
@@ -671,12 +879,12 @@
       <!-- HTML Action Bar -->
       <div class="action-bar">
          <span class="toolbar-title">HTML Preview</span>
-         <button class="btn" id="importHtmlBtn">🌐 导入 HTML</button>
-         <button class="btn" id="loadSampleHtmlBtn">💡 载入示例</button>
+         <button class="btn" id="importHtmlBtn" title="导入 HTML">🌐 <span class="btn-text">导入</span></button>
+         <button class="btn" id="loadSampleHtmlBtn" title="载入示例">💡 <span class="btn-text">示例</span></button>
          <input id="htmlFileInput" type="file" accept=".html,.htm" style="display:none;">
-         <button class="btn" id="editHtmlBtn">📝 编辑源码</button>
-         <button class="btn" id="exportImgBtnHTML">🖼 导出长图</button>
-         <button class="btn" id="exportPdfBtnHTML">📄 导出 PDF</button>
+         <button class="btn" id="editHtmlBtn" title="编辑源码">📝 <span class="btn-text">编辑</span></button>
+         <button class="btn" id="exportImgBtnHTML" title="导出长图">🖼 <span class="btn-text">长图</span></button>
+         <button class="btn" id="exportPdfBtnHTML" title="导出 PDF">📄 <span class="btn-text">PDF</span></button>
       </div>
       
       <div class="preview-toolbar">
@@ -882,7 +1090,79 @@ Here is a demonstration of table styling:
 </body>
 </html>`;
     
-        // --- Elements ---
+        // --- Sidebar Toggle (Responsive) ---
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const sidebar = document.querySelector('aside');
+
+    function openSidebar() {
+      sidebar.classList.add('open');
+      sidebarOverlay.classList.add('visible');
+    }
+
+    function closeSidebar() {
+      sidebar.classList.remove('open');
+      sidebarOverlay.classList.remove('visible');
+    }
+
+    sidebarToggle.addEventListener('click', () => {
+      if (sidebar.classList.contains('open')) {
+        closeSidebar();
+      } else {
+        openSidebar();
+      }
+    });
+
+    sidebarOverlay.addEventListener('click', closeSidebar);
+
+    // --- Auto-scale Preview ---
+    const A4_WIDTH_PX = 793; // 210mm in pixels at 96dpi
+    const previewContainerMD = document.getElementById('previewContainerMD');
+    const previewContainerHTML = document.getElementById('previewContainerHTML');
+
+    function updatePreviewScale() {
+      const paperContainer = document.getElementById('paper-container');
+      const htmlPreview = document.getElementById('htmlPreview');
+
+      // For Markdown preview
+      if (previewContainerMD && paperContainer) {
+        const availableWidth = previewContainerMD.clientWidth - 48; // minus padding
+        if (availableWidth < A4_WIDTH_PX && availableWidth > 100) {
+          const scale = Math.max(0.35, availableWidth / A4_WIDTH_PX);
+          paperContainer.style.transform = `scale(${scale.toFixed(3)})`;
+          paperContainer.style.transformOrigin = 'top center';
+          // Adjust container to account for scaled height
+          previewContainerMD.style.alignItems = 'flex-start';
+        } else {
+          paperContainer.style.transform = '';
+          paperContainer.style.transformOrigin = '';
+          previewContainerMD.style.alignItems = '';
+        }
+      }
+
+      // For HTML preview
+      if (previewContainerHTML && htmlPreview) {
+        const availableWidth = previewContainerHTML.clientWidth - 24;
+        if (availableWidth < 900 && availableWidth > 100) {
+          htmlPreview.style.width = availableWidth + 'px';
+        } else {
+          htmlPreview.style.width = '900px';
+        }
+      }
+    }
+
+    // Close sidebar on window resize if going to larger screen
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 599) {
+        closeSidebar();
+      }
+      updatePreviewScale();
+    });
+
+    // Initial scale calculation
+    setTimeout(updatePreviewScale, 100);
+
+    // --- Elements ---
         const els = {
           templateSelect: document.getElementById('templateSelect'),
           paper: document.getElementById('paper-container'),
@@ -1220,6 +1500,8 @@ Here is a demonstration of table styling:
           }
           
           if (els.status) els.status.textContent = "Preview Updated";
+          // Update scale after preview renders
+          setTimeout(updatePreviewScale, 50);
         } catch (err) {
           console.error(err);
           if (currentMode === 'html') {
