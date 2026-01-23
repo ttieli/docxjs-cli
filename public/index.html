@@ -887,6 +887,17 @@
                  <input type="checkbox" id="tableHeaderBold"> 表头加粗
                </label>
              </div>
+
+             <div class="grid-2" style="margin-top:12px;">
+               <div>
+                 <label>表格前间距 <span style="color:#888;font-size:11px">(twips, 200≈10pt)</span></label>
+                 <input type="number" id="tableSpacingBefore" placeholder="40-400">
+               </div>
+               <div>
+                 <label>表格后间距 <span style="color:#888;font-size:11px">(twips, 200≈10pt)</span></label>
+                 <input type="number" id="tableSpacingAfter" placeholder="0-400">
+               </div>
+             </div>
           </div>
         </details>
 
@@ -1397,7 +1408,12 @@ Here is a demonstration of table styling:
     
     function buildConfigFromInputs() {
       const getVal = (id) => document.getElementById(id).value;
-      const getNum = (id) => Number(document.getElementById(id).value) || undefined;
+      const getNum = (id) => {
+        const val = document.getElementById(id).value;
+        if (val === '' || val === null || val === undefined) return undefined;
+        const num = Number(val);
+        return isNaN(num) ? undefined : num;
+      };
       const getCol = (id) => document.getElementById(id).value; // Hex
       
       const getHalfPt = (id) => {
@@ -1451,13 +1467,26 @@ Here is a demonstration of table styling:
             borderStyle: getVal('tableBorderStyle') || undefined,
             borderSize: getNum('tableBorderSize'),
             borderColor: inputToHex(getCol('tableBorderColor')),
-            headerBold: document.getElementById('tableHeaderBold').checked
+            headerBold: document.getElementById('tableHeaderBold').checked,
+            spacingBefore: getNum('tableSpacingBefore'),
+            spacingAfter: getNum('tableSpacingAfter')
         }
       };
 
-      const merged = { ...base, ...uiConfig };
-      merged.margin = { ...base.margin, ...uiConfig.margin };
-      merged.table = { ...base.table, ...uiConfig.table };
+      // Helper: filter out undefined values before merging
+      const filterUndefined = (obj) => {
+        const result = {};
+        for (const key in obj) {
+          if (obj[key] !== undefined) {
+            result[key] = obj[key];
+          }
+        }
+        return result;
+      };
+
+      const merged = { ...base, ...filterUndefined(uiConfig) };
+      merged.margin = { ...(base.margin || {}), ...filterUndefined(uiConfig.margin || {}) };
+      merged.table = { ...(base.table || {}), ...filterUndefined(uiConfig.table || {}) };
 
       return merged;
     }
@@ -1545,6 +1574,8 @@ Here is a demonstration of table styling:
           setVal('tableBorderSize', style.table.borderSize);
           setVal('tableBorderColor', hexToInput(style.table.borderColor));
           document.getElementById('tableHeaderBold').checked = !!style.table.headerBold;
+          setVal('tableSpacingBefore', style.table.spacingBefore);
+          setVal('tableSpacingAfter', style.table.spacingAfter);
       }
     }
 
