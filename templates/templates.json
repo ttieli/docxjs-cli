@@ -36,7 +36,9 @@
       "borderSize": 4,
       "headerBold": true,
       "headerColor": "000000",
-      "cellAlign": "left"
+      "cellAlign": "left",
+      "spacingBefore": 40,
+      "spacingAfter": 0
     },
     "hyperlink": {
       "color": "000000",
@@ -83,7 +85,9 @@
       "borderSize": 2,
       "headerBold": false,
       "headerColor": "000000",
-      "cellAlign": "center"
+      "cellAlign": "center",
+      "spacingBefore": 40,
+      "spacingAfter": 0
     },
     "hyperlink": {
       "color": "000000",
@@ -130,7 +134,9 @@
       "borderSize": 1,
       "headerBold": false,
       "headerColor": "000000",
-      "cellAlign": "center"
+      "cellAlign": "center",
+      "spacingBefore": 40,
+      "spacingAfter": 0
     },
     "hyperlink": {
       "color": "000000",
@@ -177,7 +183,9 @@
       "borderSize": 4,
       "headerBold": true,
       "headerColor": "000000",
-      "cellAlign": "left"
+      "cellAlign": "left",
+      "spacingBefore": 40,
+      "spacingAfter": 0
     },
     "hyperlink": {
       "color": "000000",
@@ -213,7 +221,9 @@
       "borderSize": 4,
       "headerBold": true,
       "headerColor": "000000",
-      "cellAlign": "left"
+      "cellAlign": "left",
+      "spacingBefore": 40,
+      "spacingAfter": 0
     },
     "hyperlink": {
       "color": "000000",
@@ -249,7 +259,9 @@
       "borderSize": 4,
       "headerBold": true,
       "headerColor": "0056B3",
-      "cellAlign": "left"
+      "cellAlign": "left",
+      "spacingBefore": 40,
+      "spacingAfter": 0
     },
     "hyperlink": {
       "color": "0563C1",
@@ -285,7 +297,9 @@
       "borderSize": 2,
       "headerBold": true,
       "headerColor": "000000",
-      "cellAlign": "center"
+      "cellAlign": "center",
+      "spacingBefore": 40,
+      "spacingAfter": 0
     },
     "hyperlink": {
       "color": "000000",
@@ -320,7 +334,9 @@
       "borderSize": 8,
       "headerBold": true,
       "headerColor": "0000FF",
-      "cellAlign": "center"
+      "cellAlign": "center",
+      "spacingBefore": 40,
+      "spacingAfter": 0
     },
     "hyperlink": {
       "color": "FF0000",

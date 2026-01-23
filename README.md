@@ -2,21 +2,21 @@
 
 [中文说明](#中文说明) | [English](#english)
 
-**Current Version / 当前版本**: `1.3.25`
+**Current Version / 当前版本**: `1.3.27`
 
 A powerful, **hybrid tool (CLI & Desktop)** that converts Markdown to high-fidelity Word (.docx) documents. It combines the generation capabilities of Node.js with the style parsing capabilities of Python, specifically optimized for **Chinese Official Document formats (党政机关公文格式)** and standard business reports.
 
 一个强大的 **Markdown 转 Docx 工具（支持命令行与桌面端）**。它结合了 Node.js 的生成能力和 Python 的样式解析能力，专为生成符合**中国党政机关公文格式**及标准商务报告的文档而优化。
 
-### 🆕 Latest Updates (v1.3.25) / 最新更新
+### 🆕 Latest Updates (v1.3.27) / 最新更新
 
-- **Responsive Layout**: Full support for half-screen and quarter-screen window sizes on Mac with auto-scaling preview
-- **PDF to PNG**: Convert PDF files to long images via `docxjs file.pdf --image`
-- **Improved UI**: Buttons auto-hide text on narrow screens, sidebar becomes drawer on mobile widths
+- **Zoom Controls**: Word-like zoom percentage display with +/- buttons (25%-200%), click to reset
+- **Table Spacing Fix**: Fixed input fields accepting 0 values for table spacing settings
+- **Improved UI Labels**: Table spacing inputs now show unit hints (twips, 200≈10pt)
 
-- **响应式布局**：完整支持 Mac 半屏/四分之一屏使用，预览自动缩放适配窗口
-- **PDF 转长图**：支持 `docxjs file.pdf --image` 将 PDF 转换为长图
-- **优化界面**：窄屏时按钮自动隐藏文字，小屏时侧边栏变为抽屉模式
+- **缩放控制**：类似 Word 的缩放百分比显示，支持 +/- 按钮调整（25%-200%），点击重置
+- **表格间距修复**：修复表格间距设置输入 0 时无效的问题
+- **优化标签提示**：表格间距输入框显示单位提示 (twips, 200≈10pt)
 
 ## 🏗️ Architecture / 整体架构
 
