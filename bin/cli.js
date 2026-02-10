@@ -10,6 +10,82 @@ const { generateDocx } = require('../lib/core');
 const { extractStyles } = require('../lib/python-bridge');
 const { normalizeStyleConfig } = require('../lib/style-normalizer');
 
+// --- Rich help page ---
+function showRichHelp() {
+    const pkg = require('../package.json');
+    console.log(`
+docxjs v${pkg.version} - Markdown → Docx/PDF/PNG 转换工具
+
+支持格式: Markdown(.md) → Docx, PDF, PNG | PDF → PNG长图
+支持内容: 标题(H1-H6), 列表, 表格(含HTML合并单元格), 代码块,
+          引用, 图片(本地/网络), Mermaid图表, LaTeX数学公式,
+          脚注, 上下标, 删除线, 任务列表, 超链接
+
+基础用法:
+  docxjs report.md                          # Markdown → Docx (自动命名)
+  docxjs report.md -o report.docx           # 指定输出文件名
+  docxjs report.md -o report.docx -q        # 静默模式（只显示结果）
+  docxjs report.md -o report.docx --open    # 转换后自动打开文件
+
+输出格式:
+  docxjs report.md -o out.docx              # 仅 Docx
+  docxjs report.md -o out.docx --pdf        # Docx + PDF（需 LibreOffice）
+  docxjs report.md --image                  # 仅 PNG 长图（需 playwright）
+  docxjs report.md -o out.docx --image      # Docx + PNG
+  docxjs report.md -o out.docx --pdf --image  # Docx + PDF + PNG (全格式)
+  docxjs slides.pdf --image                 # PDF → PNG 长图
+
+模板系统:
+  docxjs -l                                 # 列出所有可用模板
+  docxjs report.md -t "政府公文 (红头)"        # 使用红头公文模板
+  docxjs report.md -t "学术论文"               # 使用学术论文模板
+  docxjs report.md -t "商务合同"               # 使用商务合同模板
+  docxjs report.md -c custom.json           # 使用自定义配置文件
+
+  内置模板 (9个):
+    通用样式 (General)          Calibri, 12pt, 单倍行距
+    政府公文 (红头)              方正小标宋/仿宋, 红头标题, 首行缩进
+    政府公文 (简报)              黑体/仿宋, 通知简报格式
+    商务合同                    宋体/黑体, 合同专用格式
+    学术论文                    Cambria/Calibri, 双倍行距
+    技术报告 (蓝调)              微软雅黑, 蓝色标题
+    员工手册                    仿宋/黑体, 内部文档格式
+    演示风格 / 自定义风格         夸张演示效果
+
+样式覆盖 (无需配置文件，命令行直接指定):
+  docxjs report.md --font "宋体"                     # 覆盖正文字体
+  docxjs report.md --font-size 28                     # 字号 28半磅=14pt
+  docxjs report.md --line-spacing 360                 # 行距 360twips=1.5倍
+  docxjs report.md --font "微软雅黑" --font-size 24 --line-spacing 480
+
+  字号参考: 16=8pt  20=10pt  21=10.5pt  24=12pt  28=14pt  32=16pt
+  行距参考: 240=单倍  360=1.5倍  480=双倍  560=公文固定行距
+
+样式提取 (从已有 Docx 克隆样式):
+  docxjs report.md -r template.docx -o out.docx       # 提取样式并应用
+
+参数说明:
+  <input>               输入文件 (.md 或 .pdf)
+  -o, --output          输出文件路径 (.docx)
+  -t, --template        模板名称 (用 -l 查看列表)
+  -c, --config          自定义配置 JSON 文件
+  -r, --reference-doc   参考 Docx 文件 (提取样式)
+  -l, --list-templates  列出所有模板
+  -q, --quiet           静默模式 (不输出调试日志)
+  --font <name>         覆盖正文字体
+  --font-size <n>       覆盖正文字号 (半磅, 24=12pt)
+  --line-spacing <n>    覆盖行距 (twips, 240=单倍)
+  --pdf                 同时导出 PDF (需 LibreOffice)
+  --image               同时导出 PNG (需 playwright)
+  --open                生成后自动打开文件
+  --help                显示此帮助
+  --version             显示版本号
+
+安装:
+  npm install -g https://github.com/ttieli/docxjs-cli.git
+`);
+}
+
 // --- 0. 加载配置 ---
 function loadTemplates(customConfigPath) {
     let templates = {};
@@ -64,17 +140,18 @@ function loadTemplates(customConfigPath) {
         // --- Behavior ---
         .option('quiet', { alias: 'q', type: 'boolean', description: 'Suppress verbose token-level debug output' })
         .option('open', { type: 'boolean', description: 'Open the output file after generation' })
-        .example('$0 report.md', 'Convert with default template, auto-named output')
-        .example('$0 report.md -o report.docx -t "政府公文 (红头)"', 'Convert with specific template')
-        .example('$0 report.md -o out.docx --font "宋体" --font-size 24', 'Override font styles')
-        .example('$0 report.md -o out.docx --pdf --image', 'Export docx + pdf + png')
-        .example('$0 report.md -o out.docx -q --open', 'Quiet mode, open when done')
-        .example('$0 -l', 'List all available templates')
-        .help()
+        .help(false) // Disable default --help, we use our own
+        .option('help', { type: 'boolean', description: 'Show help' })
         .version()
         .parse(); // Use parse() instead of .argv to avoid premature exit issues with help
 
     const quiet = argv.quiet || false;
+
+    // --- Help mode ---
+    if (argv.help) {
+        showRichHelp();
+        return;
+    }
 
     // --- List templates mode ---
     if (argv.listTemplates || argv.l) {
@@ -93,9 +170,9 @@ function loadTemplates(customConfigPath) {
         return;
     }
 
-    // If no input provided, show help
+    // If no input provided, show rich help
     if (!argv.input) {
-        yargs(hideBin(process.argv)).showHelp();
+        showRichHelp();
         return;
     }
 
