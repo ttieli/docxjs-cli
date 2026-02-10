@@ -1,4 +1,50 @@
 {
+  "default": {
+    "description": "Default template (alias for General)",
+    "fontMain": "Calibri",
+    "colorMain": "000000",
+    "fontHeader1": "Calibri",
+    "colorHeader1": "000000",
+    "fontHeader2": "Calibri",
+    "colorHeader2": "000000",
+    "fontHeader3": "Calibri",
+    "colorHeader3": "000000",
+    "fontHeader4": "Calibri",
+    "colorHeader4": "000000",
+    "fontHeader5": "Calibri",
+    "colorHeader5": "000000",
+    "fontHeader6": "Calibri",
+    "colorHeader6": "000000",
+    "fontSizeMain": 24,
+    "fontSizeH1": 32,
+    "fontSizeH2": 28,
+    "fontSizeH3": 24,
+    "fontSizeH4": 24,
+    "fontSizeH5": 24,
+    "fontSizeH6": 24,
+    "lineSpacing": 240,
+    "margin": {
+      "top": 1440,
+      "bottom": 1440,
+      "left": 1440,
+      "right": 1440
+    },
+    "redHeader": false,
+    "table": {
+      "borderStyle": "single",
+      "borderColor": "000000",
+      "borderSize": 4,
+      "headerBold": true,
+      "headerColor": "000000",
+      "cellAlign": "left",
+      "spacingBefore": 40,
+      "spacingAfter": 0
+    },
+    "hyperlink": {
+      "color": "000000",
+      "underline": true
+    }
+  },
   "通用样式 (General)": {
     "description": "通用文档基础样式 (Minimalist)",
     "fontMain": "Calibri",

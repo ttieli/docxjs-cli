@@ -15,11 +15,11 @@ function loadTemplates(customConfigPath) {
     let templates = {};
     // Adjust path to point to project root's templates dir relative to bin/cli.js
     const templatesDir = path.join(__dirname, '..', 'templates');
-    
+
     if (fs.existsSync(templatesDir)) {
         try {
             const files = fs.readdirSync(templatesDir).filter(file => file.toLowerCase().endsWith('.json'));
-            files.sort(); 
+            files.sort();
             files.forEach(file => {
                 const fullPath = path.join(templatesDir, file);
                 try {
@@ -45,27 +45,57 @@ function loadTemplates(customConfigPath) {
 // --- 主逻辑 ---
 (async () => {
     const argv = yargs(hideBin(process.argv))
-        .usage('Usage: $0 <input> -o <output.docx> [options]')
-        .command('$0 <input>', 'Convert Markdown to Docx (or PDF to PNG with --image)')
+        .usage('Usage: $0 <input.md> -o <output.docx> [options]')
+        .command('$0 [input]', 'Convert Markdown to Docx (or PDF to PNG with --image)')
         .positional('input', { describe: 'Input Markdown file', type: 'string' })
+        // --- Output ---
         .option('output', { alias: 'o', type: 'string', describe: 'Output Docx file path' })
-        .option('template', { alias: 't', type: 'string', description: `Template name.` })
-        .option('config', { alias: 'c', type: 'string', description: 'Custom configuration file' })
+        .option('pdf', { type: 'boolean', description: 'Also export as PDF (requires LibreOffice soffice)' })
+        .option('image', { type: 'boolean', description: 'Also export as PNG image (requires playwright)' })
+        // --- Template & Config ---
+        .option('template', { alias: 't', type: 'string', description: 'Template name (use -l to list)' })
+        .option('config', { alias: 'c', type: 'string', description: 'Custom configuration JSON file' })
         .option('reference-doc', { alias: 'r', type: 'string', description: 'Reference Docx for style extraction' })
-        .option('pdf', { type: 'boolean', description: 'Export as PDF using LibreOffice (soffice)' })
-        .option('image', { type: 'boolean', description: 'Export as PNG image (supports MD/PDF, requires playwright)' })
+        .option('list-templates', { alias: 'l', type: 'boolean', description: 'List all available templates and exit' })
+        // --- Style overrides ---
+        .option('font', { type: 'string', description: 'Override body font (e.g. "微软雅黑", "Calibri")' })
+        .option('font-size', { type: 'number', description: 'Override body font size in half-points (24=12pt)' })
+        .option('line-spacing', { type: 'number', description: 'Override line spacing in twips (240=single, 360=1.5x, 480=double)' })
+        // --- Behavior ---
+        .option('quiet', { alias: 'q', type: 'boolean', description: 'Suppress verbose token-level debug output' })
+        .option('open', { type: 'boolean', description: 'Open the output file after generation' })
+        .example('$0 report.md', 'Convert with default template, auto-named output')
+        .example('$0 report.md -o report.docx -t "政府公文 (红头)"', 'Convert with specific template')
+        .example('$0 report.md -o out.docx --font "宋体" --font-size 24', 'Override font styles')
+        .example('$0 report.md -o out.docx --pdf --image', 'Export docx + pdf + png')
+        .example('$0 report.md -o out.docx -q --open', 'Quiet mode, open when done')
+        .example('$0 -l', 'List all available templates')
         .help()
         .version()
         .parse(); // Use parse() instead of .argv to avoid premature exit issues with help
 
-    // If help or version was requested, yargs handles it and exits.
-    // If we are here, we might have arguments or not.
-    // Since we used command('$0 <input>'), yargs expects input. 
-    // However, without .demandCommand(1) strict, it might pass through.
-    // But we want to ensure input is there.
-    
+    const quiet = argv.quiet || false;
+
+    // --- List templates mode ---
+    if (argv.listTemplates || argv.l) {
+        const templates = loadTemplates(argv.config);
+        const names = Object.keys(templates).filter(k => k !== 'default');
+        console.log('\n📋 Available templates:\n');
+        console.log('  Name                                      Description');
+        console.log('  ─────────────────────────────────────────  ──────────────────────────────────');
+        names.forEach(name => {
+            const desc = templates[name].description || '';
+            const paddedName = name.padEnd(42);
+            console.log(`  ${paddedName}  ${desc}`);
+        });
+        console.log(`\n  Total: ${names.length} templates`);
+        console.log('  Use: docxjs input.md -t "<template name>"\n');
+        return;
+    }
+
+    // If no input provided, show help
     if (!argv.input) {
-        yargs.showHelp();
+        yargs(hideBin(process.argv)).showHelp();
         return;
     }
 
@@ -95,7 +125,7 @@ function loadTemplates(customConfigPath) {
                 ? argv.output.replace(/\.\w+$/, '.png')
                 : path.join(dirname, `${basename}_${timestamp}.png`);
 
-            console.log('🖼️  Converting PDF to PNG...');
+            if (!quiet) console.log('🖼️  Converting PDF to PNG...');
             try {
                 await pdfToImage(absInputPath, imagePath);
                 console.log(`✅ PNG created: ${imagePath}`);
@@ -116,7 +146,7 @@ function loadTemplates(customConfigPath) {
     // If --image only (no -o), skip docx and export PNG directly
     if (imageOnly) {
         const imagePath = path.join(dirname, `${basename}_${timestamp}.png`);
-        console.log('🖼️  Exporting to PNG only (requires playwright)...');
+        if (!quiet) console.log('🖼️  Exporting to PNG only (requires playwright)...');
         const captureScript = path.join(__dirname, 'capture.js');
         try {
             execSync(`node "${captureScript}" --input "${inputPath}" --png "${imagePath}"`, { stdio: 'inherit' });
@@ -138,13 +168,12 @@ function loadTemplates(customConfigPath) {
     // Logic:
     // 1. If input file exists AND template is specified -> Use it.
     // 2. If input file exists AND NO template specified -> Use 'default' (Silent).
-    // 3. Interactive mode logic (currently unreachable due to demandCommand(1) but kept for safety).
 
     if (!templateName) {
-        console.log(`ℹ️  No template specified. Using 'default' (Minimalist Black).`);
+        if (!quiet) console.log(`ℹ️  No template specified. Using 'default'.`);
         templateName = 'default';
     } else {
-        console.log(`📝 Mode: Template (${templateName})`);
+        if (!quiet) console.log(`📝 Template: ${templateName}`);
     }
 
     // If template not found, try fallback
@@ -155,9 +184,23 @@ function loadTemplates(customConfigPath) {
 
     let currentStyle = { ...(templates[templateName] || templates['default']) };
 
+    // --- CLI style overrides ---
+    if (argv.font) {
+        currentStyle.fontMain = argv.font;
+        if (!quiet) console.log(`  ↳ Font override: ${argv.font}`);
+    }
+    if (argv.fontSize !== undefined) {
+        currentStyle.fontSizeMain = argv.fontSize;
+        if (!quiet) console.log(`  ↳ Font size override: ${argv.fontSize} half-points (${argv.fontSize / 2}pt)`);
+    }
+    if (argv.lineSpacing !== undefined) {
+        currentStyle.lineSpacing = argv.lineSpacing;
+        if (!quiet) console.log(`  ↳ Line spacing override: ${argv.lineSpacing} twips`);
+    }
+
     // --- 样式合并 (Python Bridge) ---
     if (referenceDocPath) {
-        console.log(`🔍 Extracting styles from reference doc: ${referenceDocPath}...`);
+        if (!quiet) console.log(`🔍 Extracting styles from reference doc: ${referenceDocPath}...`);
         try {
             // Use the unified bridge
             const extractedStyles = await extractStyles(referenceDocPath);
@@ -165,7 +208,7 @@ function loadTemplates(customConfigPath) {
             if (extractedStyles.error) {
                 console.warn(`⚠️ Style extraction failed: ${extractedStyles.error}`);
             } else {
-                console.log(`✅ Styles extracted successfully! Merging...`);
+                if (!quiet) console.log(`✅ Styles extracted successfully! Merging...`);
                 Object.keys(extractedStyles).forEach(key => {
                     if (extractedStyles[key] !== null && extractedStyles[key] !== undefined && key !== 'detailed_styles_info') {
                         if (key === 'table' && typeof extractedStyles[key] === 'object') {
@@ -187,16 +230,17 @@ function loadTemplates(customConfigPath) {
     try {
         const mdContent = fs.readFileSync(inputPath, 'utf-8');
         const baseDir = path.dirname(path.resolve(inputPath));
-        const buffer = await generateDocx(mdContent, normalizeStyleConfig(currentStyle), baseDir);
+        const buffer = await generateDocx(mdContent, normalizeStyleConfig(currentStyle), baseDir, { quiet });
         fs.writeFileSync(outputPath, buffer);
-        console.log(`✅ Success! Created ${outputPath}`);
+        console.log(`✅ Created: ${outputPath}`);
 
         if (argv.pdf) {
-            console.log('📄 Converting to PDF (requires LibreOffice)...');
+            if (!quiet) console.log('📄 Converting to PDF (requires LibreOffice)...');
             const outputDir = path.dirname(outputPath);
             try {
                 execSync(`soffice --headless --convert-to pdf "${outputPath}" --outdir "${outputDir}"`, { stdio: 'pipe' });
-                console.log(`✅ PDF created: ${outputPath.replace('.docx', '.pdf')}`);
+                const pdfPath = outputPath.replace('.docx', '.pdf');
+                console.log(`✅ PDF created: ${pdfPath}`);
             } catch (e) {
                 console.error(`❌ PDF conversion failed. Please ensure LibreOffice (soffice) is installed and in your PATH.`);
             }
@@ -205,12 +249,29 @@ function loadTemplates(customConfigPath) {
         if (argv.image) {
             // When both -o and --image are specified, also export PNG
             const imagePath = outputPath.replace(/\.docx$/i, '.png');
-            console.log('🖼️  Also exporting to PNG...');
+            if (!quiet) console.log('🖼️  Also exporting to PNG...');
             const captureScript = path.join(__dirname, 'capture.js');
             try {
                 execSync(`node "${captureScript}" --input "${inputPath}" --png "${imagePath}"`, { stdio: 'inherit' });
+                console.log(`✅ PNG created: ${imagePath}`);
             } catch (e) {
                 console.error(`❌ Image export failed. Please ensure playwright is installed.`);
+            }
+        }
+
+        // --- Open output file ---
+        if (argv.open) {
+            const fileToOpen = outputPath;
+            try {
+                if (process.platform === 'darwin') {
+                    execSync(`open "${fileToOpen}"`, { stdio: 'ignore' });
+                } else if (process.platform === 'win32') {
+                    execSync(`start "" "${fileToOpen}"`, { stdio: 'ignore' });
+                } else {
+                    execSync(`xdg-open "${fileToOpen}"`, { stdio: 'ignore' });
+                }
+            } catch (e) {
+                console.warn(`⚠️ Could not open file: ${e.message}`);
             }
         }
 
