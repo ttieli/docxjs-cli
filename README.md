@@ -2,7 +2,7 @@
 
 [中文说明](#中文说明) | [English](#english)
 
-**Current Version / 当前版本**: `1.3.27`
+**Current Version / 当前版本**: `1.3.29`
 
 A powerful, **hybrid tool (CLI & Desktop)** that converts Markdown to high-fidelity Word (.docx) documents. It combines the generation capabilities of Node.js with the style parsing capabilities of Python, specifically optimized for **Chinese Official Document formats (党政机关公文格式)** and standard business reports.
 
@@ -235,4 +235,22 @@ docxjs-capture --input page.html --mode html --png out.png
 *   **Bug Reports**: Welcome via Issues.
 *   **Pull Requests**: Please adhere to the existing code style and update the version in `package.json`.
 
-**License**: ISC
+---
+
+## 🙏 Acknowledgements / 致谢
+
+This project stands on the shoulders of excellent open-source libraries. Particular thanks to:
+
+本项目建立在众多优秀开源库之上，特别感谢：
+
+*   **[`docx`](https://github.com/dolanmiu/docx)** by [@dolanmiu](https://github.com/dolanmiu) — the OOXML generation engine that powers all `.docx` output.
+*   **[`docx-preview`](https://github.com/VolodymyrBaydalka/docxjs)** by [@VolodymyrBaydalka](https://github.com/VolodymyrBaydalka) — in-browser DOCX rendering used in the desktop preview pane.
+*   **[`markdown-it`](https://github.com/markdown-it/markdown-it)** — the CommonMark + GFM parser, plus the rich plugin ecosystem (`-anchor`, `-attrs`, `-emoji`, `-footnote`, `-sub`, `-sup`, `-task-lists`).
+*   **[`python-docx`](https://github.com/python-openxml/python-docx)** — invoked via `style_extractor.py` to inspect `.docx` styles from existing samples.
+*   **[`Electron`](https://www.electronjs.org/)**, **[`Playwright`](https://playwright.dev/)**, **[`Mermaid`](https://mermaid.js.org/)**, **[`KaTeX`](https://katex.org/)**, **[`jsPDF`](https://github.com/parallax/jsPDF)**, **[`html2canvas`](https://html2canvas.hertzen.com/)**, **[`JSZip`](https://stuk.github.io/jszip/)**, **[`node-html-parser`](https://github.com/taoqf/node-html-parser)** — the rest of the rendering, capture, and parsing stack.
+
+If we've benefited from your library and you'd like a more prominent acknowledgement, please open an issue.
+
+---
+
+**License**: ISC (see [`LICENSE`](./LICENSE))
